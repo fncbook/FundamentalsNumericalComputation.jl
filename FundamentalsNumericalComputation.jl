@@ -15,7 +15,7 @@ using Reexport
 @reexport using QuadGK 
 @reexport using Interpolations
 
-@info "Exporting: LinearAlgebra,SparseArrays,Polynomials,NLsolve,Interpolations,DifferentialEquations,DataFrames,Plots"
+@info "Exporting: LinearAlgebra,SparseArrays,Polynomials,NLsolve,Interpolations,DifferentialEquations,PrettyTables,Plots"
 
 include("chapter01.jl")
 include("chapter02.jl")
