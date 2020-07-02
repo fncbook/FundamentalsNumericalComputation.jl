@@ -62,11 +62,11 @@ function rk4(ivp,n)
 
     # Time stepping.
     for i in 1:n
-        k1 = h*ivp.f( u[i],      ivp.p, t[i]     )
-        k2 = h*ivp.f( u[i]+k1/2, ivp.p, t[i]+h/2 )
-        k3 = h*ivp.f( u[i]+k2/2, ivp.p, t[i]+h/2 )
-        k4 = h*ivp.f( u[i]+k3,   ivp.p, t[i]+h   )
-        u[i+1] = u[i] + (k1 + 2*(k2 + k3) + k4)/6
+        k₁ = h*ivp.f( u[i],      ivp.p, t[i]     )
+        k₂ = h*ivp.f( u[i]+k₁/2, ivp.p, t[i]+h/2 )
+        k₃ = h*ivp.f( u[i]+k₂/2, ivp.p, t[i]+h/2 )
+        k₄ = h*ivp.f( u[i]+k₃,   ivp.p, t[i]+h   )
+        u[i+1] = u[i] + (k₁ + 2(k₂+k₃) + k₄)/6
     end
     return t,u
 end
@@ -84,7 +84,7 @@ function rk23(ivp,tol)
     t = [a]
     u = [float(ivp.u0)];   i = 1;
     h = 0.5*tol^(1/3)
-    s1 = ivp.f(ivp.u0,ivp.p,a)
+    s₁ = ivp.f(ivp.u0,ivp.p,a)
 
     # Time stepping.
     while t[i] < b
@@ -95,11 +95,11 @@ function rk23(ivp,tol)
         end
 
         # New RK stages.
-        s2 = ivp.f( u[i]+(h/2)*s1,   ivp.p, t[i]+h/2   )
-        s3 = ivp.f( u[i]+(3*h/4)*s2, ivp.p, t[i]+3*h/4 )
-        unew2 = u[i] + h*(2*s1 + 3*s2 + 4*s3)/9   # 2rd order solution
-        s4 = ivp.f( unew2, ivp.p, t[i]+h )
-        err = h*(-5*s1/72 + s2/12 + s3/9 - s4/8)  # 2nd/3rd difference
+        s₂ = ivp.f( u[i]+(h/2)*s₁,   ivp.p, t[i]+h/2   )
+        s₃ = ivp.f( u[i]+(3h/4)*s₂, ivp.p, t[i]+3h/4 )
+        unew2 = u[i] + h*(2s₁  + 3s₂ + 4s₃)/9   # 2rd order solution
+        s₄ = ivp.f( unew2, ivp.p, t[i]+h )
+        err = h*(-5s₁/72 + s₂/12 + s₃/9 - s₄/8)  # 2nd/3rd difference
         E = norm(err,Inf)                         # error estimate
         maxerr = tol*(1 + norm(u[i],Inf))     # relative/absolute blend
 
@@ -108,7 +108,7 @@ function rk23(ivp,tol)
             push!(t,t[i]+h)
             push!(u,unew2)
             i += 1
-            s1 = s4       # use FSAL property
+            s₁ = s₄       # use FSAL property
         end
 
         # Adjust step size.
@@ -132,7 +132,7 @@ function ab4(ivp,n)
     t = [ a + i*h for i in 0:n ]
 
     # Constants in the AB4 method.
-    k = 4;    sigma = [55, -59, 37, -9]/24;
+    k = 4;    σ = [55, -59, 37, -9]/24;
 
     # Find starting values by RK4.
     u = fill(float(ivp.u0),n+1)
@@ -146,7 +146,7 @@ function ab4(ivp,n)
     # Time stepping.
     for i in k:n
       f = [ ivp.f(u[i],ivp.p,t[i]), f[1:k-1]... ]   # new value of du/dt
-      u[i+1] = u[i] + h*sum(f[j]*sigma[j] for j in 1:k)  # advance a step
+      u[i+1] = u[i] + h*sum(f[j]*σ[j] for j in 1:k)  # advance a step
     end
     return t,u
 end

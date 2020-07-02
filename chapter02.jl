@@ -45,7 +45,7 @@ factors.
 function lufact(A)
 
 n = size(A,1)
-L = Matrix(Diagonal(ones(n)))
+L = diagm(0=>ones(n))  # ones on main diagonal, zeros elsewhere
 U = float(copy(A))
 
 # Gaussian elimination

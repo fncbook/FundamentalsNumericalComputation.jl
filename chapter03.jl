@@ -38,7 +38,7 @@ QR factorization by Householder reflections. Returns Q and R.
 function qrfact(A)
 
     m,n = size(A)
-    Qt = Matrix(Diagonal(ones(m)))
+    Qt = diagm(0=>ones(m))
     R = float(copy(A))
     for k in 1:n
       z = R[k:m,k]
