@@ -9,13 +9,13 @@ using Reexport
 @reexport using SparseArrays
 @reexport using Polynomials
 @reexport using NLsolve
-@reexport using DifferentialEquations
+@reexport using OrdinaryDiffEq
 @reexport using Plots
 @reexport using PrettyTables
 @reexport using QuadGK 
 @reexport using Interpolations
 
-@info "Exporting: LinearAlgebra,SparseArrays,Polynomials,NLsolve,Interpolations,DifferentialEquations,PrettyTables,Plots"
+@info "Exporting: LinearAlgebra,SparseArrays,Polynomials,NLsolve,Interpolations,OrdinaryDiffEq,PrettyTables,Plots"
 
 include("chapter01.jl")
 include("chapter02.jl")
