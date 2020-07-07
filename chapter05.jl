@@ -88,7 +88,7 @@ function spinterp(t,y)
     # This function evaluates the spline when called with a value
     # for x.
     function evaluate(x)
-        k = findfirst(@. x<t)   # one greater than interval x belongs to
+        k = findfirst(x.<t)   # one greater than interval x belongs to
         k==1 && return NaN
         if isnothing(k)
             return x==t[end] ? y[end] : NaN
