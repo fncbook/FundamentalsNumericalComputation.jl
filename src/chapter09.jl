@@ -5,24 +5,25 @@ Return a callable polynomial interpolant through the points in
 vectors `t`,`y`. Uses the barycentric interpolation formula.
 """
 function polyinterp(t,y)
+    @assert (isa(t,OffsetArray) && isa(y,OffsetArray)) "Vectors must be indexed 0:n"
     n = length(t)-1
-    C = (t[end]-t[1]) / 4       # scaling factor to ensure stability
+    C = (t[n]-t[0]) / 4           # scaling factor to ensure stability
     tc = t/C
-
+    
     # Adding one node at a time, compute inverses of the weights.
-    omega = ones(n+1)
-    for m = 1:n
-        d = tc[1:m] .- tc[m+1]      # vector of node differences
-        omega[1:m] = omega[1:m].*d  # update previous
-        omega[m+1] = prod( -d )     # compute the new one
+    ω = OffsetArray(ones(n+1),0:n)
+    for m in 0:n-1
+        d = tc[0:m] .- tc[m+1]    # vector of node differences
+        @. ω[0:m] *= d            # update previous
+        ω[m+1] = prod( -d )       # compute the new one
     end
-    w = 1 ./ omega                  # go from inverses to weights
+    w = 1 ./ ω                    # go from inverses to weights
 
     p = function (x)
         # Compute interpolant.
         terms = @. w / (x - t)
-        if any(isinf.(terms))       # divided by zero here
-            # Apply L'Hopital's Rule exactly.
+        if any(isinf.(terms))     # there was division by zero
+            # Apply L'Hôpital's Rule exactly.
             idx = findfirst(x.==t)
             f = y[idx]
         else
@@ -43,9 +44,9 @@ function triginterp(t,y)
 
     function trigcardinal(x)
         if isodd(N)      # odd
-            tau = sin(N*pi*x/2) / (N*sin(pi*x/2))
+            tau = sin(N*π*x/2) / (N*sin(π*x/2))
         else             # even
-            tau = sin(N*pi*x/2) / (N*tan(pi*x/2))
+            tau = sin(N*π*x/2) / (N*tan(π*x/2))
         end
         if isnan(tau)
             tau = 1
@@ -54,7 +55,7 @@ function triginterp(t,y)
     end
 
     p = function (x)
-        sum( y[k]*trigcardinal(x-t[k]) for k=1:N )
+        sum( y[k]*trigcardinal(x-t[k]) for k in eachindex(y) )
     end
     return p
 end
@@ -68,18 +69,18 @@ Note: `n` must be even.
 """
 function ccint(f,n)
     # Find Chebyshev extreme nodes.
-    theta = [ i*pi/n for i=0:n ]
-    x = -cos.(theta)
+    θ = OffsetArray([ i*π/n for i in 0:n ],0:n)
+    x = -cos.(θ)
 
     # Compute the C-C weights.
-    c = zeros(n+1)
-    c[[1,n+1]] .= 1/(n^2-1)
-    v = 1 .- 2*sum( cos.(2*k*theta[2:n])/(4*k^2-1) for k=1:n/2-1 )
-    v -= cos.(n*theta[2:n])/(n^2-1)
-    c[2:n] = 2*v/n
+    c = similar(θ)
+    c[[0,n]] .= 1/(n^2-1)
+    s = sum( cos.(2k*θ[1:n-1])/(4k^2-1) for k in 1:n/2-1 )
+    v = @. 1 - 2s - cos(n*θ[1:n-1])/(n^2-1)
+    c[1:n-1] = 2v/n
 
     # Evaluate integrand and integral.
-    I = dot(c,f.(x))   # use vector inner product
+    I = dot(c,f.(x))   # vector inner product
     return I,x
 end
 
@@ -91,12 +92,12 @@ in (-1,1). Return integral and a vector of the nodes used.
 """
 function glint(f,n)
     # Nodes and weights are found via a tridiagonal eigenvalue problem.
-    beta = @. 0.5/sqrt(1-(2*(1:n-1))^(-2))
-    T = diagm(-1=>beta,1=>beta)
-    lambda,V = eigen(T)
-    p = sortperm(lambda)
-    x = lambda[p]           # nodes
-    c = @. 2*V[1,p]^2       # weights
+    β = @. 0.5/sqrt(1-(2*(1:n-1))^(-2))
+    T = diagm(-1=>β,1=>β)
+    λ,V = eigen(T)
+    p = sortperm(λ)
+    x = λ[p]               # nodes
+    c = @. 2V[1,p]^2       # weights
 
     # Evaluate the integrand and compute the integral.
     I = dot(c,f.(x))      # vector inner product
@@ -112,32 +113,32 @@ Return integral and a vector of the nodes used.
 """
 function intde(f,h,M)
     # Find where to truncate the trapezoid sum.
-    K = ceil( log(4/pi*log(2*M))/h )
+    K = ceil( log(4/π*log(2M))/h )
 
     # Integrate by trapezoids in a transformed variable t.
     t = h*(-K:K)
-    x = @. sinh(pi/2*sinh(t))
-    dxdt = @. pi/2*cosh(t)*cosh(pi/2*sinh(t))
+    x = @. sinh(π/2*sinh(t))
+    dxdt = @. π/2*cosh(t)*cosh(π/2*sinh(t))
 
     I = h*dot(f.(x),dxdt)
     return I,x
 end
 
 """
-intsing(f,h,delta)
+intsing(f,h,δ)
 
 Integrate function `f` (possibly singular at 1 and -1) over
-[-1+`delta`,1-`delta`] using discretization size `h`. Return
+[-1+`δ`,1-`δ`] using discretization size `h`. Return
 integral and a vector of the nodes used.
 """
-function intsing(f,h,delta)
+function intsing(f,h,δ)
     # Find where to truncate the trapezoid sum.
-    K = ceil(log(-2/pi*log(delta/2))/h)
+    K = ceil(log(-2/π*log(δ/2))/h)
 
     # Integrate over a transformed variable.
     t = h*(-K:K)
-    x = @. tanh(pi/2*sinh(t))
-    dxdt = @. pi/2*cosh(t) / (cosh(pi/2*sinh(t))^2)
+    x = @. tanh(π/2*sinh(t))
+    dxdt = @. π/2*cosh(t) / (cosh(π/2*sinh(t))^2)
 
     I = h*dot(f.(x),dxdt)
     return I,x

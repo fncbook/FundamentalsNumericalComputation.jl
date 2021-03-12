@@ -14,8 +14,23 @@ using Reexport
 @reexport using PrettyTables
 @reexport using QuadGK 
 @reexport using Interpolations
+@reexport using GraphRecipes
+@reexport using Images
+@reexport using TestImages
+@reexport using Arpack
+@reexport using IterativeSolvers
+@reexport using LinearMaps
+@reexport using IncompleteLU
+@reexport using Preconditioners
+@reexport using OffsetArrays
+@reexport using FFTW
+@reexport using FileIO
+@reexport using SpecialFunctions
+@reexport using LaTeXStrings
+@reexport using JLD2
 
-@info "Exporting: LinearAlgebra,SparseArrays,Polynomials,NLsolve,Interpolations,OrdinaryDiffEq,PrettyTables,Plots"
+
+@info "Re-exporting multiple packages"
 
 include("chapter01.jl")
 include("chapter02.jl")
