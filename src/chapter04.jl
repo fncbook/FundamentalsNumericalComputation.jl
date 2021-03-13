@@ -105,7 +105,7 @@ if n==1
     J = (f(x0+δ) - y0) / δ
 else
     J = zeros(m,n)
-    Iₙ = I(n)
+    Iₙ = Matrix(I(n))
     for j = 1:n
         J[:,j] = (f(x0 + δ*Iₙ[:,j]) - y0) / δ
     end
