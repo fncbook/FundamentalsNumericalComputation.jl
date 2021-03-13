@@ -29,7 +29,7 @@ function shoot(phi,xspan,lval,lder,rval,rder,init)
         end
 
         IVP = ODEProblem(shootivp,v_init,xspan)
-        sol = solve(IVP,abstol=ivp_opt,reltol=ivp_opt)
+        sol = solve(IVP,Tsit5(),abstol=ivp_opt,reltol=ivp_opt)
         x = sol.t;  v = sol;
 
         return isempty(rder) ? v[1,end] - rval  :  v[2,end] - rder
