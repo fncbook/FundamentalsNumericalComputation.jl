@@ -27,6 +27,7 @@ using Reexport
 @reexport using FileIO
 @reexport using SpecialFunctions
 @reexport using LaTeXStrings
+@reexport using Printf
 @reexport using JLD2
 
 
