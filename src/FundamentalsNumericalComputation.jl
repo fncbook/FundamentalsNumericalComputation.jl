@@ -28,6 +28,7 @@ using Reexport
 @reexport using SpecialFunctions
 @reexport using LaTeXStrings
 @reexport using JLD2
+@reexport using Printf
 
 
 @info "Re-exporting multiple packages"
