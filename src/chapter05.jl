@@ -1,5 +1,5 @@
 """
-hatfun(x,t,k)
+    hatfun(x,t,k)
 
 Evaluate a piecewise linear "hat" function at `x`, where `t` is a
 vector of n+1 interpolation nodes and `k` is an integer in 0:n
@@ -7,7 +7,9 @@ giving the index of the node where the hat function equals one.
 """
 
 function hatfun(x,t,k)
-    n = length(t)-1
+
+n = length(t)-1
+
     # Return correct node given mathematical index k, including
     # fictitious choices.   
     function node(k)
@@ -20,71 +22,73 @@ function hatfun(x,t,k)
         end
     end
 
-    H1 = (x-node(k-1))/(node(k)-node(k-1))   # upward slope
-    H2 = (node(k+1)-x)/(node(k+1)-node(k))   # downward slope
+H1 = (x-node(k-1))/(node(k)-node(k-1))   # upward slope
+H2 = (node(k+1)-x)/(node(k+1)-node(k))   # downward slope
 
-    H = min(H1,H2)
-    return max(0,H)
+H = min(H1,H2)
+return max(0,H)
 end
 
 """
-plinterp(t,y)
+    plinterp(t,y)
 
-Create a piecewise linear interpolating function for data values in
+Construct a piecewise linear interpolating function for data values in
 `y` given at nodes in `t`.
 """
 function plinterp(t,y)
+
 n = length(t)-1
 return x -> sum( y[k+1]*hatfun(x,t,k) for k in 0:n )
 end
 
 """
-spinterp(t,y)
+    spinterp(t,y)
 
-Create a cubic not-a-knot spline interpolating function for data
+Construct a cubic not-a-knot spline interpolating function for data
 values in `y` given at nodes in `t`.
 """
 function spinterp(t,y)
 
-    n = length(t)-1
-    h = diff(t)         # differences of all adjacent pairs
+n = length(t)-1
+h = diff(t)         # differences of all adjacent pairs
 
-    # Preliminary definitions.
-    Z = zeros(n,n);
-    In = I(n);  E = In[1:n-1,:];
-    J = diagm(0=>ones(n),1=>-ones(n-1))
-    H = diagm(0=>h)
+# Preliminary definitions.
+Z = zeros(n,n);
+In = I(n);  E = In[1:n-1,:];
+J = diagm(0=>ones(n),1=>-ones(n-1))
+H = diagm(0=>h)
 
-    # Left endpoint interpolation:
-    AL = [ In Z Z Z ]
-    vL = y[1:n]
+# Left endpoint interpolation:
+AL = [ In Z Z Z ]
+vL = y[1:n]
 
-    # Right endpoint interpolation:
-    AR = [ In H H^2 H^3 ];
-    vR = y[2:n+1]
+# Right endpoint interpolation:
+AR = [ In H H^2 H^3 ];
+vR = y[2:n+1]
 
-    # Continuity of first derivative:
-    A1 = E*[ Z J 2*H 3*H^2 ]
-    v1 = zeros(n-1)
+# Continuity of first derivative:
+A1 = E*[ Z J 2*H 3*H^2 ]
+v1 = zeros(n-1)
 
-    # Continuity of second derivative:
-    A2 = E*[ Z Z J 3*H ]
-    v2 = zeros(n-1)
+# Continuity of second derivative:
+A2 = E*[ Z Z J 3*H ]
+v2 = zeros(n-1)
 
-    # Not-a-knot conditions:
-    nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
-    nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
+# Not-a-knot conditions:
+nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
+nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
 
-    # Assemble and solve the full system.
-    A = [ AL; AR; A1; A2; nakL; nakR ]
-    v = [ vL; vR; v1; v2; 0; 0 ]
-    z = A\v
+# Assemble and solve the full system.
+A = [ AL; AR; A1; A2; nakL; nakR ]
+v = [ vL; vR; v1; v2; 0; 0 ]
+z = A\v
 
-    # Break the coefficients into separate vectors.
-    rows = 1:n
-    a = z[rows]
-    b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
-    S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k = 1:n ]
+# Break the coefficients into separate vectors.
+rows = 1:n
+a = z[rows]
+b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
+S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k = 1:n ]
+
     # This function evaluates the spline when called with a value
     # for x.
     function evaluate(x)
@@ -95,22 +99,27 @@ function spinterp(t,y)
         end
         return S[k-1](x-t[k-1])
     end
-    return evaluate
+
+return evaluate
 end
 
 """
-fdweights(t,m)
+    fdweights(t,m)
 
-Return weights for the `m`th derivative of a function at zero using
+Compute weights for the `m`th derivative of a function at zero using
 values at the nodes in vector `t`.
 """
 function fdweights(t,m)
-    # This is a compact implementation, not an efficient one.
 
+# This is a compact implementation, not an efficient one.
+
+    # Recursion for one weight. 
     function weight(t,m,r,k)
-        # Recursion for one weight. Input: t   nodes (vector) m
-        # order of derivative sought r   number of nodes to use from
-        # t (<= length(t)) k   index of node whose weight is found
+        # Inputs
+        #   t: vector of nodes 
+        #   m: order of derivative sought 
+        #   r: number of nodes to use from t 
+        #   k: index of node whose weight is found
 
         if (m<0) || (m>r)        # undefined coeffs must be zero
             c = 0
@@ -130,36 +139,38 @@ function fdweights(t,m)
         return c
     end
 
-    r = length(t)-1
-    w = zeros(size(t))
-    return [ weight(t,m,r,k) for k=0:r ]
+r = length(t)-1
+w = zeros(size(t))
+return [ weight(t,m,r,k) for k=0:r ]
 end
 
 """
-trapezoid(f,a,b,n)
+    trapezoid(f,a,b,n)
 
 Apply the trapezoid integration formula for integrand `f` over
 interval [`a`,`b`], broken up into `n` equal pieces. Returns
-estimate, vector of nodes, and vector of integrand values at the
+the estimate, a vector of nodes, and a vector of integrand values at the
 nodes.
 """
 function trapezoid(f,a,b,n)
-    h = (b-a)/n
-    t = LinRange(a,b,n+1)
-    y = f.(t)
-    T = h * ( sum(y[2:n]) + 0.5*(y[1] + y[n+1]) )
 
-    return T,t,y
+h = (b-a)/n
+t = LinRange(a,b,n+1)
+y = f.(t)
+T = h * ( sum(y[2:n]) + 0.5*(y[1] + y[n+1]) )
+
+return T,t,y
 end
 
 """
-intadapt(f,a,b,tol)
+    intadapt(f,a,b,tol)
 
-Do adaptive integration to estimate the integral of `f` over
-[`a`,`b`] to desired error tolerance `tol`. Returns estimate and a
-vector of evaluation nodes used.
+Adaptively integrate `f` over [`a`,`b`] to within target error 
+tolerance `tol`. Returns the estimate and a vector of evaluation 
+nodes.
 """
 function intadapt(f,a,b,tol)
+ 
     # Use error estimation and recursive bisection.
     function do_integral(a,fa,b,fb,m,fm,tol)
         # These are the two new nodes and their f-values.
@@ -189,7 +200,7 @@ function intadapt(f,a,b,tol)
         return Q,t
     end
 
-    m = (b+a)/2
-    Q,t = do_integral(a,f(a),b,f(b),m,f(m),tol)
-    return Q,t
+m = (b+a)/2
+Q,t = do_integral(a,f(a),b,f(b),m,f(m),tol)
+return Q,t
 end

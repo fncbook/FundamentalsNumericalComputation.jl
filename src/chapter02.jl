@@ -1,5 +1,5 @@
 """
-forwardsub(L,b)
+    forwardsub(L,b)
 
 Solve the lower-triangular linear system with matrix `L` and
 right-hand side vector `b`.
@@ -18,7 +18,7 @@ return x
 end
 
 """
-backsub(U,b)
+    backsub(U,b)
 
 Solve the upper-triangular linear system with matrix `U` and
 right-hand side vector `b`.
@@ -37,7 +37,7 @@ return x
 end
 
 """
-lufact(A)
+    lufact(A)
 
 Compute the LU factorization of square matrix `A`, returning the
 factors.
@@ -50,10 +50,10 @@ U = float(copy(A))
 
 # Gaussian elimination
 for j = 1:n-1
-  for i = j+1:n
-    L[i,j] = U[i,j] / U[j,j]   # row multiplier
-    U[i,j:n] -= L[i,j]*U[j,j:n]
-  end
+    for i = j+1:n
+        L[i,j] = U[i,j] / U[j,j]   # row multiplier
+        U[i,j:n] -= L[i,j]*U[j,j:n]
+    end
 end
 
 return L,triu(U)

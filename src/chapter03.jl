@@ -1,5 +1,5 @@
 """
-lsnormal(A,b)
+    lsnormal(A,b)
 
 Solve a linear least squares problem by the normal equations.
 Returns the minimizer of ||b-Ax||.
@@ -16,7 +16,7 @@ end
 
 
 """
-lsqrfact(A,b)
+    lsqrfact(A,b)
 
 Solve a linear least squares problem by QR factorization. Returns
 the minimizer of ||b-Ax||.
@@ -31,30 +31,29 @@ return x
 end
 
 """
-qrfact(A)
+    qrfact(A)
 
 QR factorization by Householder reflections. Returns Q and R.
 """
 function qrfact(A)
 
-    m,n = size(A)
-    Qt = diagm(0=>ones(m))
-    R = float(copy(A))
-    for k in 1:n
-      z = R[k:m,k]
-      v = [ -sign(z[1])*norm(z) - z[1]; -z[2:end] ]
-      nrmv = norm(v)
-      if nrmv < eps() continue; end  # skip this iteration
-      v = v / nrmv;                  # simplifies other formulas
-      # Apply the reflection to each relevant column of A and Q
-      for j in 1:n
+m,n = size(A)
+Qt = diagm(0=>ones(m))
+R = float(copy(A))
+for k in 1:n
+    z = R[k:m,k]
+    v = [ -sign(z[1])*norm(z) - z[1]; -z[2:end] ]
+    nrmv = norm(v)
+    if nrmv < eps() continue; end  # skip this iteration
+    v = v / nrmv;                  # simplifies other formulas
+    # Apply the reflection to each relevant column of A and Q
+    for j in 1:n
         R[k:m,j] -= v*( 2*(v'*R[k:m,j]) )
-      end
-      for j in 1:m
-        Qt[k:m,j] -= v*( 2*(v'*Qt[k:m,j]) )
-      end
     end
-    
-    return Qt',triu(R)
+    for j in 1:m
+        Qt[k:m,j] -= v*( 2*(v'*Qt[k:m,j]) )
+    end
 end
-    
+
+return Qt',triu(R)
+end
