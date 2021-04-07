@@ -1,5 +1,5 @@
 using FundamentalsNumericalComputation
-using Test
+using Test,LinearAlgebra,OffsetArrays
 
 @testset "Chapter 1" begin
 	@test FNC.horner([-1,3,-3,1],1.6) ≈ 0.6^3
@@ -112,4 +112,142 @@ end
 	@test u[end] ≈ sol.u[end] rtol=0.0005
 	t,u = FNC.am2(ivp,2000)
 	@test u[end] ≈ sol.u[end] rtol=0.0005
+end
+
+@testset "Chapter 8" begin
+	V = randn(4,4)
+	D = diagm([-2,0.4,-0.1,0.01])
+	A = V*D/V;
+	
+	γ,x = FNC.poweriter(A,30)
+	@test γ[end] ≈ -2 rtol=1e-10
+	@test abs( dot(x,V[:,1])/(norm(V[:,1])*norm(x)) ) ≈ 1 rtol=1e-10
+
+	γ,x = FNC.inviter(A,0.37,15)
+	@test γ[end] ≈ 0.4 rtol=1e-10
+	@test abs( dot(x,V[:,2])/(norm(V[:,2])*norm(x)) ) ≈ 1 rtol=1e-10
+
+	Q,H = FNC.arnoldi(A,ones(4),4)
+	@test A*Q[:,1:4] ≈ Q*H
+
+	x,res = FNC.gmres(A,ones(4),3)
+	@test norm(ones(4) - A*x) ≈ res[end]
+	x,res = FNC.gmres(A,ones(4),4)
+	@test A*x ≈ ones(4)
+end
+
+@testset "Chapter 9" begin
+	f = x -> exp(sin(x)+x^2)
+	t = OffsetArray([-cos(k*π/40) for k in 0:40 ],0:40)
+	p = FNC.polyinterp(t,f.(t))
+	@test p(-0.12345) ≈ f(-0.12345)
+
+	f = x -> exp(sin(π*x))
+	n = 30
+	t = [ 2k/(2n+1) for k in -n:n ]
+	p = FNC.triginterp(t,f.(t))
+	@test p(-0.12345) ≈ f(-0.12345)
+	t = [ k/n for k in -n:n-1 ]
+	p = FNC.triginterp(t,f.(t))
+	@test p(-0.12345) ≈ f(-0.12345)
+
+	F = x -> tan(x/2-0.2)
+	f = x -> 0.5*sec(x/2-0.2)^2
+	@test FNC.ccint(f,40)[1] ≈ F(1)-F(-1)
+	@test FNC.glint(f,40)[1] ≈ F(1)-F(-1)
+
+	f = x -> 1/(32+2x^4)
+	@test FNC.intde(f,.2,20)[1] ≈ sqrt(2)*π/32 rtol=1e-5
+
+	f = x -> 1/( sin(1+x)^0.5*(1-x)^0.25 )
+	@test FNC.intsing(f,.1,1e-7)[1] ≈ 3.16762 rtol=1e-4
+end
+
+@testset "Chapter 10" begin
+	λ = 0.6
+	phi = (r,w,dwdr) -> λ/w^2 - dwdr/r;
+	a = eps();  b = 1;
+	lval = [];  lder = 0;   # w(a)=?, w'(a)=0
+	rval = 1;   rder = [];  # w(b)=1, w'(b)=?
+
+	r,w,dwdx = FNC.shoot(phi,(a,b),lval,lder,rval,rder,0.8)
+	@test w[1] ≈ 0.78775 rtol=1e-4
+
+	f = x -> exp(x^2-3x)
+	df = x -> (2x-3)*f(x)
+	ddf = x -> ((2x-3)^2+2)*f(x)
+
+	t,D,DD = FNC.diffmat2(400,(-0.5,2))
+	@test df.(t) ≈ D*f.(t) rtol=1e-3
+	@test ddf.(t) ≈ DD*f.(t) rtol=1e-3
+	t,D,DD = FNC.diffcheb(80,(-0.5,2))
+	@test df.(t) ≈ D*f.(t) rtol=1e-7
+	@test ddf.(t) ≈ DD*f.(t) rtol=1e-7
+
+	exact = x -> exp(sin(x));
+	p = x -> -cos(x);
+	q = sin;
+	r = x -> 0; 
+	x,u = FNC.bvplin(p,q,r,[0,pi/2],1,exp(1),300);
+	@test u ≈ exact.(x) rtol=1e-3
+
+	ϕ = (t,θ,ω) -> -0.05*ω - sin(θ);
+	init = collect(LinRange(2.5,-2,101));
+	lval,lder = 2.5,[]
+	rval,rder = -2,[]
+
+	t,θ = FNC.bvp(ϕ,[0,5],lval,lder,rval,rder,init)
+	@test θ[end][7] ≈ 2.421850016880724 rtol=1e-10
+
+	c = x -> x^2;
+	q = x -> 4;
+	f = x -> sin(π*x);
+	x,u = FNC.fem(c,q,f,0,1,100)
+	@test u[33] ≈ 0.1641366907307196 rtol=1e-10
+end
+
+@testset "Chapter 11" begin
+	s = x -> sin(π*(x-0.2))
+	c = x -> cos(π*(x-0.2))
+	f = x -> 1 + s(x)^2
+	df = x -> 2π*s(x)*c(x)
+	ddf = x -> 2π^2*(c(x)^2 - s(x)^2)
+
+	t,D,DD = FNC.diffper(400,(0,2))
+	@test df.(t) ≈ D*f.(t) rtol=1e-3
+	@test ddf.(t) ≈ DD*f.(t) rtol=1e-3
+end
+
+@testset "Chapter 13" begin 
+	X,Y = FNC.ndgrid(-3:3,0:4)
+	@test [X[3,2],Y[3,2]] ≈ [-1,1]
+
+	f = x -> exp(x^2-3x)
+	df = x -> (2x-3)*f(x)
+	ddf = x -> ((2x-3)^2+2)*f(x)
+	X,Y,d = FNC.rectdisc(100,(0.1,0.5),80,(-0.3,-0.2))
+	t = X[:,1]
+	@test df.(t) ≈ d.Dx*f.(t) rtol=1e-4
+	t = Y[1,:]
+	@test df.(t) ≈ d.Dy*f.(t) rtol=1e-3
+
+	f = (x,y) -> -sin(3*x.*y-4*y)*(9*y^2+(3*x-4)^2);
+	g = (x,y) -> sin(3*x*y-4*y);
+	xspan = [0,1];  yspan = [0,2];
+	U,X,Y = FNC.poissonfd(f,g,50,xspan,80,yspan);
+	@test g.(X,Y) ≈ U rtol=1e-3
+
+	λ = 1.5
+	function pde(U,X,Y,d)
+		LU = d.Dxx*U + U*d.Dyy';     # apply Laplacian
+		F = @. LU - λ/(U+1)^2   # residual
+	
+		L = kron(d.Dyy,d.Ix) + kron(d.Iy,d.Dxx)  # Laplacian matrix
+		u = d.vec(U)
+		J = L + spdiagm( @. 2λ/(u+1)^3 ) 
+		return F,J
+	end      
+	g = (x,y) -> 0     # boundary condition
+	U,X,Y = FNC.newtonpde(pde,g,100,[0,2.5],80,[0,1]);
+	@test U[20,45] ≈ -0.25732335309199816
 end
