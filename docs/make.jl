@@ -1,8 +1,9 @@
 using Documenter
 using FundamentalsNumericalComputation
 
+Documenter.Writers.HTMLWriter.HTML(sidebar_sitename=false)
 makedocs(
-    sitename = "FundamentalsNumericalComputation",
+    sitename = "FNC Functions",
     format = Documenter.HTML(),
     modules = [FundamentalsNumericalComputation],
     pages = [
