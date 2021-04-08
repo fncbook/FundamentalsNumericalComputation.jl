@@ -16,7 +16,7 @@ These are the Julia codes from the book [*Fundamentals of Numerical Computation*
    The process will take several minutes.
 5. Hit the backspace (delete on Mac) key to go back to the main Julia prompt. **Steps 3-5 should only need to be done once per installation.**
 
-## usage
+## Usage
 
 In order to use the functions, in each new Julia session you must enter
 

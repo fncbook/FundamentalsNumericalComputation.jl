@@ -1,7 +1,7 @@
 """
     ndgrid(x,y,...)
 
-Given ``d`` vector inputs, returns ``d``` matrices representing the coordinate
+Given ``d`` vector inputs, returns ``d`` matrices representing the coordinate
 functions on the tensor product grid.
 """
 function ndgrid(x...)

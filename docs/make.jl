@@ -13,6 +13,7 @@ makedocs(
 )
 
 deploydocs(
+    devbranch = "main",
     repo = "github.com/fncbook/FundamentalsNumericalComputation.jl.git",
 )
 
