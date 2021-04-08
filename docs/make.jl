@@ -9,8 +9,11 @@ makedocs(
     pages = [
         "index.md",
         "Functions" => "functions.md",
- #       "Square linear systems" => "chapter02.md",
     ]
+)
+
+deploydocs(
+    repo = "github.com/fncbook/FundamentalsNumericalComputation.jl.git",
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.
