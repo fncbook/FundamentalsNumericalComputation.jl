@@ -122,7 +122,7 @@ while (norm(s) > tol) && (normr > tol)
         U,r,J = Unew,rnew,Jnew
         normr = norm(r)
         k = k+1
-        println("Norm of residual = $normr")
+        @info "Norm of residual = $normr"
     else
         # Reject.
         λ = 4λ   # dampen the Newton step more
