@@ -108,6 +108,7 @@ c = @. 2V[1,p]^2       # weights
 
 # Evaluate the integrand and compute the integral.
 I = dot(c,f.(x))      # vector inner product
+
 return I,x
 end
 
@@ -129,6 +130,7 @@ x = @. sinh(π/2*sinh(t))
 dxdt = @. π/2*cosh(t)*cosh(π/2*sinh(t))
 
 I = h*dot(f.(x),dxdt)
+
 return I,x
 end
 
@@ -150,5 +152,6 @@ x = @. tanh(π/2*sinh(t))
 dxdt = @. π/2*cosh(t) / (cosh(π/2*sinh(t))^2)
 
 I = h*dot(f.(x),dxdt)
+
 return I,x
 end

@@ -9,15 +9,15 @@ function poweriter(A,numiter)
 
 n = size(A,1)
 x = normalize(randn(n),Inf)
-gamma = zeros(numiter)
+γ = zeros(numiter)
 for k = 1:numiter
     y = A*x
     normy,m = findmax(abs.(y))
-    gamma[k] = y[m]/x[m]
+    γ[k] = y[m]/x[m]
     x = y/y[m]
 end
 
-return gamma,x
+return γ,x
 end
 
 """
@@ -31,16 +31,16 @@ function inviter(A,s,numiter)
 
 n = size(A,1)
 x = normalize(randn(n),Inf)
-gamma = zeros(numiter)
+γ = zeros(numiter)
 fact = lu(A - s*I)
 for k = 1:numiter
     y = fact\x
     normy,m = findmax(abs.(y))
-    gamma[k] = x[m]/y[m] + s
+    γ[k] = x[m]/y[m] + s
     x = y/y[m]
 end
 
-return gamma,x
+return γ,x
 end
 
 """

@@ -7,7 +7,7 @@ functions on the tensor product grid.
 function ndgrid(x...)
 
 I = CartesianIndices( fill(undef,length.(x)) )
-[ [ x[d][i[d]] for i in I]  for d = 1:length(x) ]
+return [ [ x[d][i[d]] for i in I]  for d = 1:length(x) ]
 end
 
 """
@@ -110,22 +110,22 @@ r,J = residual(U)
 tol = 1e-10;  itermax = 20;
 s = Inf;  normr = norm(r);  k = 1;
 
-lambda = 1
+λ = 1
 while (norm(s) > tol) && (normr > tol)
-    s = -(J'*J + lambda*I) \ Vector(J'*r)  # damped step
+    s = -(J'*J + λ*I) \ (J'*r)  # damped step
     Unew = U + d.unvec(s)
     rnew,Jnew = residual(Unew)
 
     if norm(rnew) < normr
         # Accept and update.
-        lambda = lambda/6;   # dampen the Newton step less
-        U = Unew;  r = rnew;  J = Jnew;
+        λ = λ/6   # dampen the Newton step less
+        U,r,J = Unew,rnew,Jnew
         normr = norm(r)
         k = k+1
         println("Norm of residual = $normr")
     else
         # Reject.
-        lambda = lambda*4;   # dampen the Newton step more
+        λ = 4λ   # dampen the Newton step more
     end
 
     if k==itermax

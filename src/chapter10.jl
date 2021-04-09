@@ -1,8 +1,8 @@
 """
-    shoot(phi,xspan,lval,lder,rval,rder,init)
+    shoot(ϕ,xspan,lval,lder,rval,rder,init)
 
 Use the shooting method to solve a two-point boundary value problem.
-The ODE is u'' = `phi`(x,u,u') for x in `xspan`. Specify a function
+The ODE is u'' = `ϕ`(x,u,u') for x in `xspan`. Specify a function
 value or derivative at the left endpoint using `lval` and `lder`,
 respectively, and similarly for the right endpoint  using `rval` and
 `rder`. (Use an empty array to denote an unknown quantity.) The
@@ -12,7 +12,7 @@ the left endpoint.
 Returns vectors for the nodes, the values of u, and the values of
 u'.
 """
-function shoot(phi,xspan,lval,lder,rval,rder,init)
+function shoot(ϕ,xspan,lval,lder,rval,rder,init)
 
 # Tolerances for IVP solver and rootfinder.
 ivp_opt = 1e-6
@@ -25,7 +25,7 @@ function objective(s)
 
     # ODE posed as a first-order equation in 2 variables.
     function shootivp(v,p,x)
-        [ v[2]; phi(x,v[1],v[2]) ]
+        [ v[2]; ϕ(x,v[1],v[2]) ]
     end
 
     IVP = ODEProblem(shootivp,v_init,xspan)
@@ -90,7 +90,7 @@ first and second derivatives.
 """
 function diffcheb(n,xspan)
     
-x = [ -cos( k*pi/n ) for k=0:n ]    # nodes in [-1,1]
+x = [ -cos( k*π/n ) for k=0:n ]    # nodes in [-1,1]
 Dx = zeros(n+1,n+1)
 c = [2; ones(n-1); 2];    # endpoint factors
 
@@ -143,10 +143,10 @@ return x,u
 end
 
 """
-    bvp(phi,xspan,lval,lder,rval,rder,init)
+    bvp(ϕ,xspan,lval,lder,rval,rder,init)
 
 Use finite differences to solve a two-point boundary value problem.
-The ODE is u'' = `phi`(x,u,u') for x in `xspan`. Specify a function
+The ODE is u'' = `ϕ`(x,u,u') for x in `xspan`. Specify a function
 value or derivative at the left endpoint using `lval` and `lder`,
 respectively, and similarly for the right endpoint  using `rval` and
 `rder`. (Use an empty array to denote an unknown quantity.) The
@@ -155,18 +155,18 @@ the left endpoint.
 
 Returns vectors for the nodes and the values of u.
 """
-function bvp(phi,xspan,lval,lder,rval,rder,init)
+function bvp(ϕ,xspan,lval,lder,rval,rder,init)
     
 n = length(init) - 1
 x,Dx,Dxx = diffmat2(n,xspan)
 h = x[2]-x[1]
 
 function residual(u)
-    # Compute the difference between u'' and phi(x,u,u') at the
+    # Compute the difference between u'' and ϕ(x,u,u') at the
     # interior nodes and appends the error at the boundaries.
     dudx = Dx*u                   # discrete u'
     d2udx2 = Dxx*u                # discrete u''
-    f = d2udx2 - phi.(x,u,dudx)
+    f = d2udx2 - ϕ.(x,u,dudx)
 
     # Replace first and last values by boundary conditions.
     f[1] = isempty(lder) ? (u[1] - lval)/h^2 : (dudx[1] - lder)/h
