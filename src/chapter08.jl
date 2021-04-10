@@ -10,7 +10,7 @@ function poweriter(A,numiter)
 n = size(A,1)
 x = normalize(randn(n),Inf)
 γ = zeros(numiter)
-for k = 1:numiter
+for k in 1:numiter
     y = A*x
     normy,m = findmax(abs.(y))
     γ[k] = y[m]/x[m]
@@ -33,7 +33,7 @@ n = size(A,1)
 x = normalize(randn(n),Inf)
 γ = zeros(numiter)
 fact = lu(A - s*I)
-for k = 1:numiter
+for k in 1:numiter
     y = fact\x
     normy,m = findmax(abs.(y))
     γ[k] = x[m]/y[m] + s
@@ -56,11 +56,11 @@ n = length(u)
 Q = zeros(n,m+1)
 H = zeros(m+1,m)
 Q[:,1] = u/norm(u)
-for j = 1:m
+for j in 1:m
     # Find the new direction that extends the Krylov subspace.
     v = A*Q[:,j]
     # Remove the projections onto the previous vectors.
-    for i = 1:j
+    for i in 1:j
         H[i,j] = dot(Q[:,i],v)
         v -= H[i,j]*Q[:,i]
     end
@@ -90,10 +90,10 @@ H = zeros(m+1,m)
 x = 0
 residual = [norm(b);zeros(m)]
 
-for j = 1:m
+for j in 1:m
     # Next step of Arnoldi iteration.
     v = A*Q[:,j]
-    for i = 1:j
+    for i in 1:j
         H[i,j] = dot(Q[:,i],v)
         v -= H[i,j]*Q[:,i]
     end
@@ -148,7 +148,7 @@ return A
 end
 
 function sprandsym(n,density,rcond::Number)
-    lambda = [ rcond^(i/(n-1)) for i = 0:n-1 ]
+    lambda = [ rcond^(i/(n-1)) for i in 0:n-1 ]
     sprandsym(n,density,lambda)
 end
 

@@ -87,7 +87,7 @@ z = A\v
 rows = 1:n
 a = z[rows]
 b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
-S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k = 1:n ]
+S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
 
     # This function evaluates the spline when called with a value
     # for x.

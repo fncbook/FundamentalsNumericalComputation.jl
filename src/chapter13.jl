@@ -7,7 +7,7 @@ functions on the tensor product grid.
 function ndgrid(x...)
 
 I = CartesianIndices( fill(undef,length.(x)) )
-return [ [ x[d][i[d]] for i in I]  for d = 1:length(x) ]
+return [ [ x[d][i[d]] for i in I]  for d in 1:length(x) ]
 end
 
 """

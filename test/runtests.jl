@@ -29,14 +29,14 @@ end
 
 @testset "Chapter 4" begin
 
-	for c = [2,4,7.5,11]
+	for c in [2,4,7.5,11]
 		f = x -> exp(x) - x - c;
 		dfdx = x -> exp(x) - 1;
 		x = FNC.newton(f,dfdx,1.0);  r = x[end];
 		@test abs(f(r)) < 100eps()
 	end
 
-	for c = [2,4,7.5,11]
+	for c in [2,4,7.5,11]
 		f = x -> exp(x) - x - c;
 		dfdx = x -> exp(x) - 1;
 		x = FNC.secant(f,3,0.5);  r = x[end];

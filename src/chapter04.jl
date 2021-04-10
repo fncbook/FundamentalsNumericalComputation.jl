@@ -108,7 +108,7 @@ if n==1
     J = (f(x₀+δ) - y₀) / δ
 else
     J = zeros(m,n)
-    for j = 1:n
+    for j in 1:n
         x = copy(x₀)
         x[j] += δ
         J[:,j] = (f(x) - y₀) / δ
