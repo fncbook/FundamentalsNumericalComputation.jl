@@ -1,12 +1,12 @@
 using FundamentalsNumericalComputation
-using Test,SafeTestsets
+using Test
 using LinearAlgebra,OffsetArrays
 
-@safetestset "Chapter 1" begin
+@testset "Chapter 1" begin
 	@test FNC.horner([-1,3,-3,1],1.6) ≈ 0.6^3
 end
 
-@safetestset "Chapter 2" begin
+@testset "Chapter 2" begin
 	A = [ 1 2 3 0; -1 1 2 -1; 3 1 2 4; 1 1 1 1 ]
 	L,U = FNC.lufact(A)
 	@test norm(L*U - A) < 100eps()
@@ -17,7 +17,7 @@ end
 	@test norm(U\b - FNC.backsub(U,b)) < 100eps()
 end
 
-@safetestset "Chapter 3" begin
+@testset "Chapter 3" begin
 	A = [3 4 5;-1 0 1;4 2 0; 1 1 2; 3 -4 1]
 	b = 5:-1:1
 	@test FNC.lsnormal(A,b) ≈ A\b
@@ -28,7 +28,7 @@ end
 	@test R ≈ RR[1:3,:]
 end
 
-@safetestset "Chapter 4" begin
+@testset "Chapter 4" begin
 
 	for c in [2,4,7.5,11]
 		f = x -> exp(x) - x - c;
@@ -69,7 +69,7 @@ end
 
 end
 
-@safetestset "Chapter 5" begin
+@testset "Chapter 5" begin
 	f = t->cos(5t)
 	Q,t = FNC.intadapt(f,-1,3,1e-8)
 	@test Q ≈ (sin(15)+sin(5))/5 rtol = 1e-5
@@ -89,7 +89,7 @@ end
 	@test p(0.22) ≈ f(t[5]) + (f(t[6])-f(t[5]))*(0.22-t[5])/(t[6]-t[5])	
 end
 
-@safetestset "Chapter 6" begin
+@testset "Chapter 6" begin
 	f = (u,p,t) -> u + p*t^2
 	û = exp(1.5) - 2*(-2 + 2*exp(1.5) - 2*1.5 - 1.5^2)
 	ivp = ODEProblem(f,1,(0,1.5),-2)
@@ -115,7 +115,7 @@ end
 	@test u[end] ≈ sol.u[end] rtol=0.0005
 end
 
-@safetestset "Chapter 8" begin
+@testset "Chapter 8" begin
 	V = randn(4,4)
 	D = diagm([-2,0.4,-0.1,0.01])
 	A = V*D/V;
@@ -137,7 +137,7 @@ end
 	@test A*x ≈ ones(4)
 end
 
-@safetestset "Chapter 9" begin
+@testset "Chapter 9" begin
 	f = x -> exp(sin(x)+x^2)
 	t = OffsetArray([-cos(k*π/40) for k in 0:40 ],0:40)
 	p = FNC.polyinterp(t,f.(t))
@@ -164,7 +164,7 @@ end
 	@test FNC.intsing(f,.1,1e-7)[1] ≈ 3.16762 rtol=1e-4
 end
 
-@safetestset "Chapter 10" begin
+@testset "Chapter 10" begin
 	λ = 0.6
 	phi = (r,w,dwdr) -> λ/w^2 - dwdr/r;
 	a = eps();  b = 1;
@@ -207,7 +207,7 @@ end
 	@test u[33] ≈ 0.1641366907307196 rtol=1e-10
 end
 
-@safetestset "Chapter 11" begin
+@testset "Chapter 11" begin
 	s = x -> sin(π*(x-0.2))
 	c = x -> cos(π*(x-0.2))
 	f = x -> 1 + s(x)^2
@@ -219,7 +219,7 @@ end
 	@test ddf.(t) ≈ DD*f.(t) rtol=1e-3
 end
 
-@safetestset "Chapter 13" begin 
+@testset "Chapter 13" begin 
 	X,Y = FNC.ndgrid(-3:3,0:4)
 	@test [X[3,2],Y[3,2]] ≈ [-1,1]
 
