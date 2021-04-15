@@ -130,8 +130,8 @@ function fdweights(t,m)
                 c = (t[r+1]*weight(t,m,r-1,k) -
                     m*weight(t,m-1,r-1,k))/(t[r+1]-t[k+1])
             else
-                numer = r > 1 ? prod(t[r]-x for x in t[1:r-1]) : 1.0
-                denom = r > 0 ? prod(t[r+1]-x for x in t[1:r]) : 1.0
+                numer = r > 1 ? prod(t[r]-x for x in t[1:r-1]) : 1
+                denom = r > 0 ? prod(t[r+1]-x for x in t[1:r]) : 1
                 β = numer/denom
                 c = β*(m*weight(t,m-1,r-1,r-1) - t[r]*weight(t,m,r-1,r-1))
             end
