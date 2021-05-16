@@ -46,15 +46,43 @@ function lufact(A)
 
 n = size(A,1)
 L = diagm(ones(n))   # ones on main diagonal, zeros elsewhere
-U = float(copy(A))
+U = zeros(n,n)
+Aₖ = float(copy(A))
 
-# Gaussian elimination
-for j in 1:n-1
-    for i in j+1:n
-        L[i,j] = U[i,j] / U[j,j]    # row multiplier
-        U[i,j:n] -= L[i,j]*U[j,j:n]
-    end
+# Reduction by outer products
+for k in 1:n-1
+    U[k,:] = Aₖ[k,:]
+    L[:,k] = Aₖ[:,k]/U[k,k]
+    Aₖ -= L[:,k]*U[k,:]'
+end
+U[n,n] = Aₖ[n,n]
+
+return L,U
 end
 
-return L,triu(U)
+"""
+    plufact(A)
+
+Compute the PLU factorization of square matrix `A`, returning the
+factors and a row permutation vector.
+"""
+function plufact(A)
+
+n = size(A,1)
+L = diagm(ones(n))   # ones on main diagonal, zeros elsewhere
+U = zeros(n,n)
+p = fill(0,n)
+Aₖ = float(copy(A))
+
+# Reduction by outer products
+for k in 1:n-1
+    p[k] = argmax(abs.(Aₖ[:,k]))
+    U[k,:] = Aₖ[p[k],:]
+    L[:,k] = Aₖ[:,k]/U[k,k]
+    Aₖ -= L[:,k]*U[k,:]'
+end
+p[n] = argmax(abs.(Aₖ[:,n]))
+U[n,n] = Aₖ[p[n],n]
+
+return L,U,p
 end
