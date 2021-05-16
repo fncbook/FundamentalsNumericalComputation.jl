@@ -64,7 +64,7 @@ end
     plufact(A)
 
 Compute the PLU factorization of square matrix `A`, returning the
-factors and a row permutation vector.
+triangular factors and a row permutation vector.
 """
 function plufact(A)
 
@@ -84,5 +84,5 @@ end
 p[n] = argmax(abs.(Aₖ[:,n]))
 U[n,n] = Aₖ[p[n],n]
 
-return L,U,p
+return L[p,:],U,p
 end

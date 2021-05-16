@@ -16,10 +16,9 @@ end
 	@test norm(L\b - FNC.forwardsub(L,b)) < 100eps()
 	@test norm(U\b - FNC.backsub(U,b)) < 100eps()
 	L,U,p = FNC.plufact(A)
-	@test norm(L*U - A) < 100eps()
+	@test norm(L*U - A[p,:]) < 100eps()
 	@test norm(U - triu(U)) < 100eps()
-	PL = L[p,:]
-	@test norm(PL - tril(PL)) < 100eps()
+	@test norm(L - tril(L)) < 100eps()
 end
 
 @testset "Chapter 3" begin
