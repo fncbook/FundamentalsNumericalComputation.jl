@@ -57,7 +57,7 @@ for k in 1:n-1
 end
 U[n,n] = Aₖ[n,n]
 
-return L,U
+return LowerTriangular(L),UpperTriangular(U)
 end
 
 """
@@ -69,7 +69,7 @@ triangular factors and a row permutation vector.
 function plufact(A)
 
 n = size(A,1)
-L = diagm(ones(n))   # ones on main diagonal, zeros elsewhere
+L = zeros(n,n)
 U = zeros(n,n)
 p = fill(0,n)
 Aₖ = float(copy(A))
@@ -83,6 +83,7 @@ for k in 1:n-1
 end
 p[n] = argmax(abs.(Aₖ[:,n]))
 U[n,n] = Aₖ[p[n],n]
+L[:,n] = Aₖ[:,n]/U[n,n]
 
-return L[p,:],U,p
+return LowerTriangular(L[p,:]),U,p
 end
