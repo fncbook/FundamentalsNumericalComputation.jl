@@ -42,10 +42,10 @@ Qt = diagm(ones(m))
 R = float(copy(A))
 for k in 1:n
     z = R[k:m,k]
-    v = [ -sign(z[1])*norm(z) - z[1]; -z[2:end] ]
-    nrmv = norm(v)
-    if nrmv < eps() continue; end  # skip this iteration
-    v = v / nrmv;                  # simplifies other formulas
+    w = [ -sign(z[1])*norm(z) - z[1]; -z[2:end] ]
+    nrmw = norm(w)
+    if nrmw < eps() continue; end    # skip this iteration
+    v = w / nrmw;
     # Apply the reflection to each relevant column of A and Q
     for j in 1:n
         R[k:m,j] -= v*( 2*(v'*R[k:m,j]) )
