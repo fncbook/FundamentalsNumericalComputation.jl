@@ -106,7 +106,7 @@ Compute a finite-difference approximation of the Jacobian matrix for
 """
 function fdjac(f,x₀,y₀=f(x₀))
 
-δ = sqrt(eps())*max(norm(x₀),norm(y₀),eps())   # FD step size
+δ = sqrt(eps())*max(norm(x₀),1)   # FD step size
 m,n = length(y₀),length(x₀)
 if n==1
     J = (f(x₀+δ) - y₀) / δ
