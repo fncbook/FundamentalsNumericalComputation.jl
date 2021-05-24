@@ -99,12 +99,12 @@ return x
 end
 
 """
-    fdjac(f,x₀,y₀)
+    fdjac(f,x₀[,y₀])
 
 Compute a finite-difference approximation of the Jacobian matrix for
-`f` at `x₀`, where `y₀`=`f(x₀)` is given.
+`f` at `x₀`, where `y₀`=`f(x₀)` may be given.
 """
-function fdjac(f,x₀,y₀)
+function fdjac(f,x₀,y₀=f(x₀))
 
 δ = sqrt(eps())*norm(x₀)   # FD step size
 m,n = length(y₀),length(x₀)
