@@ -8,16 +8,14 @@ giving the index of the node where the hat function equals one.
 
 function hatfun(t,k)
 
+n = length(t)-1
 return function(x)
-    i = findlast(@. x > t)
-    if isnothing(i) || i==length(t)    # out of interval
-        return NaN
-    elseif i==k    # on the upslope
+    if k > 0 && t[k] ≤ x < t[k+1]
         return (x-t[k])/(t[k+1]-t[k])
-    elseif i==k+1    # on the downslope
+    elseif k < n && t[k+1] < x ≤ t[k+2]
         return (t[k+2]-x)/(t[k+2]-t[k+1])
     else
-        return 0    # too far from the active node
+        return 0
     end
 end
 
