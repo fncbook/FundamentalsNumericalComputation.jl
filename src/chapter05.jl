@@ -1,32 +1,26 @@
 """
-    hatfun(x,t,k)
+    hatfun(t,k)
 
-Evaluate a piecewise linear "hat" function at `x`, where `t` is a
+Create a piecewise linear hat function, where `t` is a
 vector of n+1 interpolation nodes and `k` is an integer in 0:n
 giving the index of the node where the hat function equals one.
 """
 
-function hatfun(x,t,k)
+function hatfun(t,k)
 
-n = length(t)-1
-
-    # Return correct node given mathematical index k, including
-    # fictitious choices.   
-    function node(k)
-        if k < 0
-            2t[1]-t[2]
-        elseif k > n 
-            2t[n+1]-t[n] 
-        else
-            t[k+1]
-        end
+return function(x)
+    i = findlast(@. x > t)
+    if isnothing(i) || i==length(t)    # out of interval
+        return NaN
+    elseif i==k    # on the upslope
+        return (x-t[k])/(t[k+1]-t[k])
+    elseif i==k+1    # on the downslope
+        return (t[k+2]-x)/(t[k+2]-t[k+1])
+    else
+        return 0    # too far from the active node
     end
+end
 
-H1 = (x-node(k-1))/(node(k)-node(k-1))   # upward slope
-H2 = (node(k+1)-x)/(node(k+1)-node(k))   # downward slope
-
-H = min(H1,H2)
-return max(0,H)
 end
 
 """
@@ -38,7 +32,8 @@ Construct a piecewise linear interpolating function for data values in
 function plinterp(t,y)
 
 n = length(t)-1
-return x -> sum( y[k+1]*hatfun(x,t,k) for k in 0:n )
+H = [ hatfun(t,k) for k in 0:n ]
+return x -> sum( y[k+1]*H[k+1](x) for k in 0:n )
 end
 
 """

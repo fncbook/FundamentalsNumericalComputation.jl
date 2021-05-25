@@ -86,9 +86,10 @@ end
 	w = FNC.fdweights(t.-0.12,2)
 	f = x->cos(3x)
 	@test dot(w,f.(t)) ≈ -9cos(0.36) rtol = 1e-3
-	y = FNC.hatfun(0.22,t,5)
-	@test y ≈ (0.22-t[5])/(t[6]-t[5])
-	@test FNC.hatfun(0.6,t,5)==0
+	H = FNC.hatfun(t,5)
+	@test H(0.22) ≈ (0.22-t[5])/(t[6]-t[5])
+	@test H(.38) ≈ (t[7]-.38)/(t[7]-t[6])
+	@test H(0.06)==0
 	p = FNC.plinterp(t,f.(t)) 
 	@test p(0.22) ≈ f(t[5]) + (f(t[6])-f(t[5]))*(0.22-t[5])/(t[6]-t[5])	
 end
