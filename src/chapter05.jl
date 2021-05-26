@@ -12,7 +12,7 @@ function hatfun(t,k)
     return function(x)
         if k > 0 && t[k-1] ≤ x ≤ t[k]
             return (x-t[k-1])/(t[k]-t[k-1])
-        elseif k < n && t[k] < x ≤ t[k+1]
+        elseif k < n && t[k] ≤ x ≤ t[k+1]
             return (t[k+1]-x)/(t[k+1]-t[k])
         else
             return 0
