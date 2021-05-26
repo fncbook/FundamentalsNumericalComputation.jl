@@ -7,12 +7,13 @@ giving the index of the node where the hat function equals one.
 """
 
 function hatfun(t,k)
-    n = length(t)-1
+    @assert isa(t,OffsetArray) "Node vector must be indexed 0:n."
+    n = lastindex(t)
     return function(x)
-        if k > 0 && t[k] ≤ x < t[k+1]
-            return (x-t[k])/(t[k+1]-t[k])
-        elseif k < n && t[k+1] < x ≤ t[k+2]
-            return (t[k+2]-x)/(t[k+2]-t[k+1])
+        if k > 0 && t[k-1] ≤ x ≤ t[k]
+            return (x-t[k-1])/(t[k]-t[k-1])
+        elseif k < n && t[k] < x ≤ t[k+1]
+            return (t[k+1]-x)/(t[k+1]-t[k])
         else
             return 0
         end
@@ -26,9 +27,10 @@ Construct a piecewise linear interpolating function for data values in
 `y` given at nodes in `t`.
 """
 function plinterp(t,y)
-    n = length(t)-1
-    H = [ hatfun(t,k) for k in 0:n ]
-    return x -> sum( y[k+1]*H[k+1](x) for k in 0:n )
+    @assert isa(t,OffsetArray) && isa(y,OffsetArray) "Vectors must be indexed 0:n."
+    n = lastindex(t)
+    H = OffsetArray( [hatfun(t,k) for k in eachindex(t)], 0:n )
+    return x -> sum( y[k]*H[k](x) for k in eachindex(y) )
 end
 
 """
@@ -38,8 +40,9 @@ Construct a cubic not-a-knot spline interpolating function for data
 values in `y` given at nodes in `t`.
 """
 function spinterp(t,y)
-    n = length(t)-1
-    h = diff(t)         # differences of all adjacent pairs
+    @assert isa(t,OffsetArray) && isa(y,OffsetArray) "Vectors must be indexed 0:n."
+    n = lastindex(t)
+    h = [ t[k+1]-t[k] for k in 0:n-1 ]
 
     # Preliminary definitions.
     Z = zeros(n,n);
@@ -49,11 +52,11 @@ function spinterp(t,y)
 
     # Left endpoint interpolation:
     AL = [ In Z Z Z ]
-    vL = y[1:n]
+    vL = y[0:n-1]
 
     # Right endpoint interpolation:
     AR = [ In H H^2 H^3 ];
-    vR = y[2:n+1]
+    vR = y[1:n]
 
     # Continuity of first derivative:
     A1 = E*[ Z J 2*H 3*H^2 ]
@@ -78,17 +81,18 @@ function spinterp(t,y)
     b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
     S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
 
-        # This function evaluates the spline when called with a value
-        # for x.
-        function evaluate(x)
-            k = findfirst(x.<t)   # one greater than interval x belongs to
-            k==1 && return NaN
-            if isnothing(k)
-                return x==t[end] ? y[end] : NaN
-            end
-            return S[k-1](x-t[k-1])
+    # This function evaluates the spline when called with a value
+    # for x.
+    return function (x)
+        if x < t[0] || x > t[n]    # outside the interval
+            return NaN
+        elseif x==t[end]
+            return y[end]
+        else
+            k = findfirst(x .< t)    # 1st node to the right of x
+            return S[k](x-t[k-1])
         end
-    return evaluate
+    end
 end
 
 """
@@ -139,9 +143,9 @@ nodes.
 """
 function trapezoid(f,a,b,n)
     h = (b-a)/n
-    t = LinRange(a,b,n+1)
+    t = OffsetArray(range(a,b,length=n+1),0:n)
     y = f.(t)
-    T = h * ( sum(y[2:n]) + 0.5*(y[1] + y[n+1]) )
+    T = h * ( sum(y[1:n-1]) + 0.5*(y[0] + y[n]) )
     return T,t,y
 end
 

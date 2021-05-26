@@ -81,17 +81,24 @@ end
 	@test T ≈ (sin(15)+sin(5))/5 rtol = 1e-4
 	
 	t = [-2,-0.5,0,1,1.5,3.5,4]/10
-	S = FNC.spinterp(t,exp.(t))
-	@test S(0.33) ≈ exp(0.33) rtol = 1e-5
 	w = FNC.fdweights(t.-0.12,2)
 	f = x->cos(3x)
 	@test dot(w,f.(t)) ≈ -9cos(0.36) rtol = 1e-3
+	
+	t = OffsetArray([-2,-0.5,0,1,1.5,3.5,4]/10,0:6)
 	H = FNC.hatfun(t,5)
-	@test H(0.22) ≈ (0.22-t[5])/(t[6]-t[5])
-	@test H(.38) ≈ (t[7]-.38)/(t[7]-t[6])
+	@test H(0.22) ≈ (0.22-t[4])/(t[5]-t[4])
+	@test H(.38) ≈ (t[6]-.38)/(t[6]-t[5])
 	@test H(0.06)==0
+	@test H(t[5])==1
+	@test H(t[6])==0
+	@test H(t[0])==0
 	p = FNC.plinterp(t,f.(t)) 
-	@test p(0.22) ≈ f(t[5]) + (f(t[6])-f(t[5]))*(0.22-t[5])/(t[6]-t[5])	
+	@test p(0.22) ≈ f(t[4]) + (f(t[5])-f(t[4]))*(0.22-t[4])/(t[5]-t[4])	
+	S = FNC.spinterp(t,exp.(t))
+	x = [-.17,-0.01,0.33,.38]
+	@test S.(x) ≈ exp.(x) rtol = 1e-5
+	@test S.(t) ≈ exp.(t) rtol = 1e-11
 end
 
 @testset "Chapter 6" begin
