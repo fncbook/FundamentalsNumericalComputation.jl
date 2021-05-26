@@ -5,9 +5,8 @@ Given ``d`` vector inputs, returns ``d`` matrices representing the coordinate
 functions on the tensor product grid.
 """
 function ndgrid(x...)
-
-I = CartesianIndices( fill(undef,length.(x)) )
-return [ [ x[d][i[d]] for i in I]  for d in 1:length(x) ]
+    I = CartesianIndices( fill(undef,length.(x)) )
+    return [ [ x[d][i[d]] for i in I]  for d in 1:length(x) ]
 end
 
 """
@@ -18,27 +17,26 @@ a rectangle that is the tensor product of intervals `xspan` and
 `yspan`, using `m`+1 and `n`+1 points in the two coordinates.
 """
 function rectdisc(m,xspan,n,yspan)
-    
-# Initialize grid and finite differences.
-x,Dx,Dxx = diffmat2(m,xspan)
-y,Dy,Dyy = diffmat2(n,yspan)
-X = repeat(x,outer=(1,n+1))
-Y = repeat(y',outer=(m+1,1))
+    # Initialize grid and finite differences.
+    x,Dx,Dxx = diffmat2(m,xspan)
+    y,Dy,Dyy = diffmat2(n,yspan)
+    X = repeat(x,outer=(1,n+1))
+    Y = repeat(y',outer=(m+1,1))
 
-# Locate boundary points.
-isbndy = fill(true,m+1,n+1)
-isbndy[2:m,2:n] .= false
+    # Locate boundary points.
+    isbndy = fill(true,m+1,n+1)
+    isbndy[2:m,2:n] .= false
 
-# Get the diff. matrices recognized as sparse. Also include reshaping functions.
-disc = (
-    Dx=sparse(Dx), Dxx=sparse(Dxx),
-    Dy=sparse(Dy), Dyy=sparse(Dyy),
-    Ix=Diagonal(ones(m+1)), Iy=Diagonal(ones(n+1)),
-    isbndy=isbndy,
-    vec=vec,
-    unvec=u -> reshape(u,m+1,n+1)
-    )
-return X,Y,disc
+    # Get the diff. matrices recognized as sparse. Also include reshaping functions.
+    disc = (
+        Dx=sparse(Dx), Dxx=sparse(Dxx),
+        Dy=sparse(Dy), Dyy=sparse(Dyy),
+        Ix=Diagonal(ones(m+1)), Iy=Diagonal(ones(n+1)),
+        isbndy=isbndy,
+        vec=vec,
+        unvec=u -> reshape(u,m+1,n+1)
+        )
+    return X,Y,disc
 end
 
 """
@@ -54,24 +52,23 @@ Returns matrices of the grid solution values and the coordinate
 functions.
 """
 function poissonfd(f,g,m,xspan,n,yspan)
-    
-# Initialize the rectangle discretization.
-X,Y,d = rectdisc(m,xspan,n,yspan)
+    # Initialize the rectangle discretization.
+    X,Y,d = rectdisc(m,xspan,n,yspan)
 
-# Form the collocated PDE as a linear system.
-A = kron(d.Iy,d.Dxx) + kron(d.Dyy,d.Ix)  # Laplacian matrix
-b = d.vec(f.(X,Y))
+    # Form the collocated PDE as a linear system.
+    A = kron(d.Iy,d.Dxx) + kron(d.Dyy,d.Ix)  # Laplacian matrix
+    b = d.vec(f.(X,Y))
 
-# Replace collocation equations on the boundary.
-scale = maximum(abs.(A[n+2,:]))
-I = kron(d.Iy,d.Ix)
-A[d.isbndy[:],:] = scale*I[d.isbndy[:],:]                 # Dirichet assignment
-b[d.isbndy[:]] = scale*g.( X[d.isbndy],Y[d.isbndy] )  # assigned values
+    # Replace collocation equations on the boundary.
+    scale = maximum(abs.(A[n+2,:]))
+    I = kron(d.Iy,d.Ix)
+    A[d.isbndy[:],:] = scale*I[d.isbndy[:],:]                 # Dirichet assignment
+    b[d.isbndy[:]] = scale*g.( X[d.isbndy],Y[d.isbndy] )  # assigned values
 
-# Solve the linear sytem and reshape the output.
-u = A\b
-U = d.unvec(u)
-return U,X,Y
+    # Solve the linear sytem and reshape the output.
+    u = A\b
+    U = d.unvec(u)
+    return U,X,Y
 end
 
 """
@@ -87,9 +84,8 @@ functions.
 """
 
 function newtonpde(f,g,m,xspan,n,yspan)
-  
-# Discretization.
-X,Y,d = rectdisc(n,xspan,n,yspan)
+    # Discretization.
+    X,Y,d = rectdisc(n,xspan,n,yspan)
 
     # This evaluates the discretized PDE and its Jacobian, with all the
     # boundary condition modifications applied.
@@ -104,34 +100,34 @@ X,Y,d = rectdisc(n,xspan,n,yspan)
         return r,J
     end
 
-# Intialize the Newton iteration.
-U = zeros(size(X))
-r,J = residual(U)
-tol = 1e-10;  itermax = 20;
-s = Inf;  normr = norm(r);  k = 1;
+    # Intialize the Newton iteration.
+    U = zeros(size(X))
+    r,J = residual(U)
+    tol = 1e-10;  itermax = 20;
+    s = Inf;  normr = norm(r);  k = 1;
 
-λ = 1
-while (norm(s) > tol) && (normr > tol)
-    s = -(J'*J + λ*I) \ (J'*r)  # damped step
-    Unew = U + d.unvec(s)
-    rnew,Jnew = residual(Unew)
+    λ = 1
+    while (norm(s) > tol) && (normr > tol)
+        s = -(J'*J + λ*I) \ (J'*r)  # damped step
+        Unew = U + d.unvec(s)
+        rnew,Jnew = residual(Unew)
 
-    if norm(rnew) < normr
-        # Accept and update.
-        λ = λ/6   # dampen the Newton step less
-        U,r,J = Unew,rnew,Jnew
-        normr = norm(r)
-        k = k+1
-        @info "Norm of residual = $normr"
-    else
-        # Reject.
-        λ = 4λ   # dampen the Newton step more
+        if norm(rnew) < normr
+            # Accept and update.
+            λ = λ/6   # dampen the Newton step less
+            U,r,J = Unew,rnew,Jnew
+            normr = norm(r)
+            k = k+1
+            @info "Norm of residual = $normr"
+        else
+            # Reject.
+            λ = 4λ   # dampen the Newton step more
+        end
+
+        if k==itermax
+            @warn "Maximum number of Newton iterations reached."
+            break
+        end
     end
-
-    if k==itermax
-        @warn "Maximum number of Newton iterations reached."
-        break
-    end
-end
-return U,X,Y
+    return U,X,Y
 end

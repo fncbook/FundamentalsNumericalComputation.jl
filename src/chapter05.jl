@@ -7,18 +7,16 @@ giving the index of the node where the hat function equals one.
 """
 
 function hatfun(t,k)
-
-n = length(t)-1
-return function(x)
-    if k > 0 && t[k] ≤ x < t[k+1]
-        return (x-t[k])/(t[k+1]-t[k])
-    elseif k < n && t[k+1] < x ≤ t[k+2]
-        return (t[k+2]-x)/(t[k+2]-t[k+1])
-    else
-        return 0
+    n = length(t)-1
+    return function(x)
+        if k > 0 && t[k] ≤ x < t[k+1]
+            return (x-t[k])/(t[k+1]-t[k])
+        elseif k < n && t[k+1] < x ≤ t[k+2]
+            return (t[k+2]-x)/(t[k+2]-t[k+1])
+        else
+            return 0
+        end
     end
-end
-
 end
 
 """
@@ -28,10 +26,9 @@ Construct a piecewise linear interpolating function for data values in
 `y` given at nodes in `t`.
 """
 function plinterp(t,y)
-
-n = length(t)-1
-H = [ hatfun(t,k) for k in 0:n ]
-return x -> sum( y[k+1]*H[k+1](x) for k in 0:n )
+    n = length(t)-1
+    H = [ hatfun(t,k) for k in 0:n ]
+    return x -> sum( y[k+1]*H[k+1](x) for k in 0:n )
 end
 
 """
@@ -41,59 +38,57 @@ Construct a cubic not-a-knot spline interpolating function for data
 values in `y` given at nodes in `t`.
 """
 function spinterp(t,y)
+    n = length(t)-1
+    h = diff(t)         # differences of all adjacent pairs
 
-n = length(t)-1
-h = diff(t)         # differences of all adjacent pairs
+    # Preliminary definitions.
+    Z = zeros(n,n);
+    In = I(n);  E = In[1:n-1,:];
+    J = diagm(0=>ones(n),1=>-ones(n-1))
+    H = diagm(0=>h)
 
-# Preliminary definitions.
-Z = zeros(n,n);
-In = I(n);  E = In[1:n-1,:];
-J = diagm(0=>ones(n),1=>-ones(n-1))
-H = diagm(0=>h)
+    # Left endpoint interpolation:
+    AL = [ In Z Z Z ]
+    vL = y[1:n]
 
-# Left endpoint interpolation:
-AL = [ In Z Z Z ]
-vL = y[1:n]
+    # Right endpoint interpolation:
+    AR = [ In H H^2 H^3 ];
+    vR = y[2:n+1]
 
-# Right endpoint interpolation:
-AR = [ In H H^2 H^3 ];
-vR = y[2:n+1]
+    # Continuity of first derivative:
+    A1 = E*[ Z J 2*H 3*H^2 ]
+    v1 = zeros(n-1)
 
-# Continuity of first derivative:
-A1 = E*[ Z J 2*H 3*H^2 ]
-v1 = zeros(n-1)
+    # Continuity of second derivative:
+    A2 = E*[ Z Z J 3*H ]
+    v2 = zeros(n-1)
 
-# Continuity of second derivative:
-A2 = E*[ Z Z J 3*H ]
-v2 = zeros(n-1)
+    # Not-a-knot conditions:
+    nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
+    nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
 
-# Not-a-knot conditions:
-nakL = [ zeros(1,3*n) [1 -1 zeros(1,n-2)] ]
-nakR = [ zeros(1,3*n) [zeros(1,n-2) 1 -1] ]
+    # Assemble and solve the full system.
+    A = [ AL; AR; A1; A2; nakL; nakR ]
+    v = [ vL; vR; v1; v2; 0; 0 ]
+    z = A\v
 
-# Assemble and solve the full system.
-A = [ AL; AR; A1; A2; nakL; nakR ]
-v = [ vL; vR; v1; v2; 0; 0 ]
-z = A\v
+    # Break the coefficients into separate vectors.
+    rows = 1:n
+    a = z[rows]
+    b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
+    S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
 
-# Break the coefficients into separate vectors.
-rows = 1:n
-a = z[rows]
-b = z[n.+rows];  c = z[2*n.+rows];  d = z[3*n.+rows]
-S = [ Polynomial([a[k],b[k],c[k],d[k]]) for k in 1:n ]
-
-    # This function evaluates the spline when called with a value
-    # for x.
-    function evaluate(x)
-        k = findfirst(x.<t)   # one greater than interval x belongs to
-        k==1 && return NaN
-        if isnothing(k)
-            return x==t[end] ? y[end] : NaN
+        # This function evaluates the spline when called with a value
+        # for x.
+        function evaluate(x)
+            k = findfirst(x.<t)   # one greater than interval x belongs to
+            k==1 && return NaN
+            if isnothing(k)
+                return x==t[end] ? y[end] : NaN
+            end
+            return S[k-1](x-t[k-1])
         end
-        return S[k-1](x-t[k-1])
-    end
-
-return evaluate
+    return evaluate
 end
 
 """
@@ -103,9 +98,7 @@ Compute weights for the `m`th derivative of a function at zero using
 values at the nodes in vector `t`.
 """
 function fdweights(t,m)
-
 # This is a compact implementation, not an efficient one.
-
     # Recursion for one weight. 
     function weight(t,m,r,k)
         # Inputs
@@ -131,10 +124,9 @@ function fdweights(t,m)
         end
         return c
     end
-
-r = length(t)-1
-w = zeros(size(t))
-return [ weight(t,m,r,k) for k=0:r ]
+    r = length(t)-1
+    w = zeros(size(t))
+    return [ weight(t,m,r,k) for k=0:r ]
 end
 
 """
@@ -146,13 +138,11 @@ the estimate, a vector of nodes, and a vector of integrand values at the
 nodes.
 """
 function trapezoid(f,a,b,n)
-
-h = (b-a)/n
-t = LinRange(a,b,n+1)
-y = f.(t)
-T = h * ( sum(y[2:n]) + 0.5*(y[1] + y[n+1]) )
-
-return T,t,y
+    h = (b-a)/n
+    t = LinRange(a,b,n+1)
+    y = f.(t)
+    T = h * ( sum(y[2:n]) + 0.5*(y[1] + y[n+1]) )
+    return T,t,y
 end
 
 """
@@ -163,7 +153,6 @@ tolerance `tol`. Returns the estimate and a vector of evaluation
 nodes.
 """
 function intadapt(f,a,b,tol)
- 
     # Use error estimation and recursive bisection.
     function do_integral(a,fa,b,fb,m,fm,tol)
         # These are the two new nodes and their f-values.
@@ -192,8 +181,7 @@ function intadapt(f,a,b,tol)
         end
         return Q,t
     end
-
-m = (b+a)/2
-Q,t = do_integral(a,f(a),b,f(b),m,f(m),tol)
-return Q,t
+    m = (b+a)/2
+    Q,t = do_integral(a,f(a),b,f(b),m,f(m),tol)
+    return Q,t
 end
