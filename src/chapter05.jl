@@ -153,7 +153,7 @@ Adaptively integrate `f` over [`a`,`b`] to within target error
 tolerance `tol`. Returns the estimate and a vector of evaluation 
 nodes.
 """
-function intadapt(f,a,b,tol,fa=f(a),fb=f(b),m=(a+b)/2,fm=f(m),nodes=[])
+function intadapt(f,a,b,tol,fa=f(a),fb=f(b),m=(a+b)/2,fm=f(m))
     # Use error estimation and recursive bisection.
     # These are the two new nodes and their f-values.
     xl = (a+m)/2;  fl = f(xl);
@@ -174,8 +174,8 @@ function intadapt(f,a,b,tol,fa=f(a),fb=f(b),m=(a+b)/2,fm=f(m),nodes=[])
         nodes = [a,xl,m,xr,b]      # all nodes at this level
     else
         # Error is too large--bisect and recurse.
-        QL,tL = intadapt(f,a,m,tol,fa,fm,xl,fl,nodes)
-        QR,tR = intadapt(f,m,b,tol,fm,fb,xr,fr,nodes)
+        QL,tL = intadapt(f,a,m,tol,fa,fm,xl,fl)
+        QR,tR = intadapt(f,m,b,tol,fm,fb,xr,fr)
         Q = QL + QR
         nodes = [tL;tR[2:end]]   # merge the nodes w/o duplicate
     end
