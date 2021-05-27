@@ -153,36 +153,31 @@ Adaptively integrate `f` over [`a`,`b`] to within target error
 tolerance `tol`. Returns the estimate and a vector of evaluation 
 nodes.
 """
-function intadapt(f,a,b,tol)
+function intadapt(f,a,b,tol,fa=f(a),fb=f(b),m=(a+b)/2,fm=f(m),nodes=[])
     # Use error estimation and recursive bisection.
-    function do_integral(a,fa,b,fb,m,fm,tol)
-        # These are the two new nodes and their f-values.
-        xl = (a+m)/2;  fl = f(xl);
-        xr = (m+b)/2;  fr = f(xr);
-        t = [a,xl,m,xr,b]          # all 5 nodes at this level
-
-        # Compute the trapezoid values iteratively.
-        h = (b-a)
-        T = [0.,0.,0.]
-        T[1] = h*(fa+fb)/2
-        T[2] = T[1]/2 + (h/2)*fm
-        T[3] = T[2]/2 + (h/4)*(fl+fr)
-
-        S = (4*T[2:3]-T[1:2]) / 3      # Simpson values
-        E = (S[2]-S[1]) / 15           # error estimate
-
-        if abs(E) < tol*(1+abs(S[2]))  # acceptable error?
-            Q = S[2]                   # yes--done
-        else
-            # Error is too large--bisect and recurse.
-            QL,tL = do_integral(a,fa,m,fm,xl,fl,tol)
-            QR,tR = do_integral(m,fm,b,fb,xr,fr,tol)
-            Q = QL + QR
-            t = [tL;tR[2:end]]   # merge the nodes w/o duplicate
-        end
-        return Q,t
+    # These are the two new nodes and their f-values.
+    xl = (a+m)/2;  fl = f(xl);
+    xr = (m+b)/2;  fr = f(xr);
+    
+    # Compute the trapezoid values iteratively.
+    h = (b-a)
+    T = [0.,0.,0.]
+    T[1] = h*(fa+fb)/2
+    T[2] = T[1]/2 + (h/2)*fm
+    T[3] = T[2]/2 + (h/4)*(fl+fr)
+    
+    S = (4T[2:3]-T[1:2]) / 3      # Simpson values
+    E = (S[2]-S[1]) / 15           # error estimate
+    
+    if abs(E) < tol*(1+abs(S[2]))  # acceptable error?
+        Q = S[2]                   # yes--done
+        nodes = [a,xl,m,xr,b]      # all nodes at this level
+    else
+        # Error is too large--bisect and recurse.
+        QL,tL = intadapt(f,a,m,tol,fa,fm,xl,fl,nodes)
+        QR,tR = intadapt(f,m,b,tol,fm,fb,xr,fr,nodes)
+        Q = QL + QR
+        nodes = [tL;tR[2:end]]   # merge the nodes w/o duplicate
     end
-    m = (b+a)/2
-    Q,t = do_integral(a,f(a),b,f(b),m,f(m),tol)
-    return Q,t
+    return Q,nodes
 end
