@@ -133,13 +133,13 @@ function ab4(ivp,n)
     t = [ a + i*h for i in 0:n ]
 
     # Constants in the AB4 method.
-    k = 4;    σ = [55, -59, 37, -9]/24;
+    k = 4;   σ = [55,-59,37,-9]/24;
 
     # Find starting values by RK4.
     u = fill(float(ivp.u0),n+1)
     rkivp = ODEProblem(ivp.f,ivp.u0,(a,a+(k-1)*h),ivp.p)
     ts,us = rk4(rkivp,k-1)
-    u[1:k] = us[1:k]
+    u[1:k] .= us
 
     # Compute history of u' values, from newest to oldest.
     f = [ ivp.f(u[k-i],ivp.p,t[k-i]) for i in 1:k-1  ]
@@ -174,8 +174,8 @@ function am2(ivp,n)
         # Data that does not depend on the new value.
         known = u[i] + h/2*ivp.f(u[i],ivp.p,t[i])
         # Find a root for the new value.
-        F = z -> z .- h/2*ivp.f(z,ivp.p,t[i+1]) .- known
-        unew = levenberg(F,known)
+        g = z -> z - h/2*ivp.f(z,ivp.p,t[i+1]) - known
+        unew = levenberg(g,known)
         u[i+1] = unew[end]
     end
     return t,u
