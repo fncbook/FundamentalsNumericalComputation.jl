@@ -13,7 +13,7 @@ using Reexport
 @reexport using Plots
 @reexport using PrettyTables
 @reexport using QuadGK 
-@reexport using Interpolations
+@reexport using MatrixDepot
 @reexport using GraphRecipes
 @reexport using Images
 @reexport using TestImages
