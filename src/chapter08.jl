@@ -8,14 +8,14 @@ and the final eigenvector approximation.
 function poweriter(A,numiter)
     n = size(A,1)
     x = normalize(randn(n),Inf)
-    γ = zeros(numiter)
+    β = zeros(numiter)
     for k in 1:numiter
         y = A*x
-        normy,m = findmax(abs.(y))
-        γ[k] = y[m]/x[m]
+        m = argmax(abs.(y))
+        β[k] = y[m]/x[m]
         x = y/y[m]
     end
-    return γ,x
+    return β,x
 end
 
 """
@@ -28,15 +28,15 @@ eigenvalue estimates and the final eigenvector approximation.
 function inviter(A,s,numiter)
     n = size(A,1)
     x = normalize(randn(n),Inf)
-    γ = zeros(numiter)
+    β = zeros(numiter)
     fact = lu(A - s*I)
     for k in 1:numiter
         y = fact\x
         normy,m = findmax(abs.(y))
-        γ[k] = x[m]/y[m] + s
+        β[k] = x[m]/y[m] + s
         x = y/y[m]
     end
-    return γ,x
+    return β,x
 end
 
 """
