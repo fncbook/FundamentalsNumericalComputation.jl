@@ -5,25 +5,24 @@ Construct a callable polynomial interpolant through the points in
 vectors `t`,`y` using the barycentric interpolation formula.
 """
 function polyinterp(t,y)
-    @assert (isa(t,OffsetArray) && isa(y,OffsetArray)) "Vectors must be indexed 0:n"
     n = length(t)-1
-    C = (t[n]-t[0]) / 4           # scaling factor to ensure stability
+    C = (t[n+1]-t[1]) / 4           # scaling factor to ensure stability
     tc = t/C
 
     # Adding one node at a time, compute inverses of the weights.
-    ω = OffsetArray(ones(n+1),0:n)
+    ω = ones(n+1)
     for m in 0:n-1
-        d = tc[0:m] .- tc[m+1]    # vector of node differences
-        @. ω[0:m] *= d            # update previous
-        ω[m+1] = prod( -d )       # compute the new one
+        d = tc[1:m+1] .- tc[m+2]    # vector of node differences
+        @. ω[1:m+1] *= d            # update previous
+        ω[m+2] = prod( -d )         # compute the new one
     end
-    w = 1 ./ ω                    # go from inverses to weights
+    w = 1 ./ ω                      # go from inverses to weights
 
+    # This function evaluates the interpolant at given x.
     p = function (x)
-        # Compute interpolant.
         terms = @. w / (x - t)
         if any(isinf.(terms))     # there was division by zero
-            # Apply L'Hôpital's Rule exactly.
+            # return the node's data value
             idx = findfirst(x.==t)
             f = y[idx]
         else
@@ -69,15 +68,15 @@ nodes used. Note: `n` must be even.
 function ccint(f,n)
     @assert iseven(n) "Value of `n` must be an even integer."
     # Find Chebyshev extreme nodes.
-    θ = OffsetArray([ i*π/n for i in 0:n ],0:n)
+    θ = [ i*π/n for i in 0:n ]
     x = -cos.(θ)
 
     # Compute the C-C weights.
     c = similar(θ)
-    c[[0,n]] .= 1/(n^2-1)
-    s = sum( cos.(2k*θ[1:n-1])/(4k^2-1) for k in 1:n/2-1 )
-    v = @. 1 - 2s - cos(n*θ[1:n-1])/(n^2-1)
-    c[1:n-1] = 2v/n
+    c[[1,n+1]] .= 1/(n^2-1)
+    s = sum( cos.(2k*θ[2:n])/(4k^2-1) for k in 1:n/2-1 )
+    v = @. 1 - 2s - cos(n*θ[2:n])/(n^2-1)
+    c[2:n] = 2v/n
 
     # Evaluate integrand and integral.
     I = dot(c,f.(x))   # vector inner product

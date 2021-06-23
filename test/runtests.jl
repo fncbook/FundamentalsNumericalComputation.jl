@@ -1,6 +1,6 @@
 using FundamentalsNumericalComputation
 using Test
-using LinearAlgebra,OffsetArrays
+using LinearAlgebra
 
 @testset "Chapter 1" begin
 	@test FNC.horner([-1,3,-3,1],1.6) ≈ 0.6^3
@@ -151,7 +151,7 @@ end
 
 @testset "Chapter 9" begin
 	f = x -> exp(sin(x)+x^2)
-	t = OffsetArray([-cos(k*π/40) for k in 0:40 ],0:40)
+	t = [-cos(k*π/40) for k in 0:40 ]
 	p = FNC.polyinterp(t,f.(t))
 	@test p(-0.12345) ≈ f(-0.12345)
 
