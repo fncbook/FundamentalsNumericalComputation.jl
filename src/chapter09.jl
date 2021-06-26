@@ -41,20 +41,17 @@ vectors `t` and `y`.
 function triginterp(t,y)
     N = length(t)
 
-    function trigcardinal(x)
-        if isodd(N)      # odd
-            tau = sin(N*π*x/2) / (N*sin(π*x/2))
-        else             # even
-            tau = sin(N*π*x/2) / (N*tan(π*x/2))
+    function τ(x)
+        if x==0
+            return 1.0
+        else
+            denom = isodd(N) ? N*sin(π*x/2) : N*tan(π*x/2)
+            return sin(N*π*x/2)/denom
         end
-        if isnan(tau)
-            tau = 1
-        end
-        return tau
     end
 
     return function (x)
-        sum( y[k]*trigcardinal(x-t[k]) for k in eachindex(y) )
+        sum( y[k]*τ(x-t[k]) for k in eachindex(y) )
     end
 end
 
