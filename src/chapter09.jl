@@ -116,7 +116,7 @@ function intinf(f,tol)
     M = 3
     while (abs(g(-M)) > tol/100) || (abs(g(M)) > tol/100)
         M += 0.5
-        if M > log(log(floatmax()))
+        if isinf(x(M)) 
             @warn "Function may not decay fast enough."
             M -= 0.5
             break
@@ -143,7 +143,7 @@ function intsing(f,tol)
     M = 3
     while abs(g(M)) > tol/100
         M += 0.5
-        if M > log(log(2/floatmin()))
+        if iszero(x(M)) 
             @warn "Function may grow too rapidly."
             M -= 0.5
             break
