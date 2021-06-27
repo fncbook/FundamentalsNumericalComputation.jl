@@ -101,41 +101,55 @@ function glint(f,n)
 end
 
 """
-    intde(f,h,M)
+    intinf(f,tol)
 
-Perform doubly-exponential integration of function `f` over
-(-Inf,Inf), using discretization size `h` and truncation point `M`.
-Returns the integral estimate and a vector of the nodes used.
+Perform adaptive doubly-exponential integration of function `f` 
+over (-Inf,Inf), with error tolerance `tol`. Returns the integral 
+estimate and a vector of the nodes used.
 """
-function intde(f,h,M)
-    # Find where to truncate the trapezoid sum.
-    K = ceil( log(4/π*log(2M))/h )
+function intinf(f,tol)   
+    x = t -> sinh(sinh(t))
+    dx_dt = t -> cosh(t)*cosh(sinh(t))
+    g = t -> f(x(t))*dx_dt(t)
 
-    # Integrate by trapezoids in a transformed variable t.
-    t = h*(-K:K)
-    x = @. sinh(π/2*sinh(t))
-    dxdt = @. π/2*cosh(t)*cosh(π/2*sinh(t))
+    # Find where to truncate the integration interval.
+    M = 3
+    while (abs(g(-M)) > tol/100) || (abs(g(M)) > tol/100)
+        M += 0.5
+        if M > log(log(floatmax()))
+            @warn "Function may not decay fast enough."
+            M -= 0.5
+            break
+        end
+    end
 
-    I = h*dot(f.(x),dxdt)
-    return I,x
+    I,t = intadapt(g,-M,M,tol)
+	return I,x.(t)
 end
 
 """
-    intsing(f,h,δ)
+    intsing(f,tol)
 
-Integrate function `f` (possibly singular at 1 and -1) over
-[-1+`δ`,1-`δ`] using discretization size `h`. Returns the
+Adaptively integrate function `f` over (0,1), where `f` may be 
+singular at zero, with error tolerance `tol`. Returns the
 integral estimate and a vector of the nodes used.
 """
-function intsing(f,h,δ)
-    # Find where to truncate the trapezoid sum.
-    K = ceil(log(-2/π*log(δ/2))/h)
+function intsing(f,tol)
+    x = t -> 2/(1+exp(2sinh(t)))
+	dx_dt = t -> cosh(t)/cosh(sinh(t))^2
+	g = t -> f(x(t))*dx_dt(t)
 
-    # Integrate over a transformed variable.
-    t = h*(-K:K)
-    x = @. tanh(π/2*sinh(t))
-    dxdt = @. π/2*cosh(t) / (cosh(π/2*sinh(t))^2)
+    # Find where to truncate the integration interval.
+    M = 3
+    while abs(g(M)) > tol/100
+        M += 0.5
+        if M > log(log(2/floatmin()))
+            @warn "Function may grow too rapidly."
+            M -= 0.5
+            break
+        end
+    end
 
-    I = h*dot(f.(x),dxdt)
-    return I,x
+    I,t = intadapt(g,0,M,tol)
+	return I,x.(t)
 end

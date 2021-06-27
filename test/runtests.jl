@@ -170,10 +170,10 @@ end
 	@test FNC.glint(f,40)[1] ≈ F(1)-F(-1)
 
 	f = x -> 1/(32+2x^4)
-	@test FNC.intde(f,.2,20)[1] ≈ sqrt(2)*π/32 rtol=1e-5
+	@test FNC.intinf(f,1e-9)[1] ≈ sqrt(2)*π/32 rtol=1e-5
 
-	f = x -> 1/( sin(1+x)^0.5*(1-x)^0.25 )
-	@test FNC.intsing(f,.1,1e-7)[1] ≈ 3.16762 rtol=1e-4
+	f = x -> (1-x)/( sin(x)^0.5 )
+	@test FNC.intsing(f,1e-8)[1] ≈ 1.34312 rtol=1e-5
 end
 
 @testset "Chapter 10" begin
