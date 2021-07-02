@@ -25,7 +25,7 @@ function shoot(φ,xspan,g₁,g₂,init,tol=1e-5)
     s = levenberg(objective,init,xtol=tol)[:,end]
 
     # Use the stored last solution of the IVP. 
-    u,du_dx = eachcol(y) 
+    u,du_dx = eachrow(y) 
     return x,u,du_dx
 end
 
