@@ -1,48 +1,32 @@
 """
-    shoot(ϕ,xspan,lval,lder,rval,rder,init)
+    shoot(φ,xspan,g₁,g₂,init)
 
-Use the shooting method to solve a two-point boundary value problem.
-The ODE is u'' = `ϕ`(x,u,u') for x in `xspan`. Specify a function
-value or derivative at the left endpoint using `lval` and `lder`,
-respectively, and similarly for the right endpoint  using `rval` and
-`rder`. (Use an empty array to denote an unknown quantity.) The
-value `init` is an initial guess for whichever value is missing at
-the left endpoint.
+Shooting method to solve a two-point boundary value problem with
+ODE u'' = `φ`(x,u,u') for x in `xspan`, left boundary condition 
+`g₁`(u,u')=0, and right boundary condition `g₂`(u,u')=0. The
+value `init` is an initial estimate for vector [u,u'] at x=a.
 
-Returns vectors for the nodes, the values of u, and the values of
-u'.
+Returns vectors for the nodes, the solution u, and derivative u'.
 """
-function shoot(ϕ,xspan,lval,lder,rval,rder,init)
-    # Tolerances for IVP solver and rootfinder.
-    ivp_opt = 1e-6
-    optim_opt = 1e-5
+function shoot(φ,xspan,g₁,g₂,init,tol=1e-5)
+    # ODE posed as a first-order equation in 2 variables.
+    shootivp = (v,p,x) -> [ v[2]; φ(x,v[1],v[2]) ]
 
     # Evaluate the difference between computed and target values at x=b.
     function objective(s)
-        # Combine s with the known left endpoint value.
-        v_init = isempty(lder) ?  [ lval; s[1] ]  :  [ s[1]; lder ]
-
-        # ODE posed as a first-order equation in 2 variables.
-        function shootivp(v,p,x)
-            [ v[2]; ϕ(x,v[1],v[2]) ]
-        end
-
-        IVP = ODEProblem(shootivp,v_init,xspan)
-        sol = solve(IVP,Tsit5(),abstol=ivp_opt,reltol=ivp_opt)
-        x = sol.t;  v = sol;
-
-        return isempty(rder) ? v[1,end] - rval  :  v[2,end] - rder
+        IVP = ODEProblem(shootivp,s,float.(xspan))
+        sol = solve(IVP,Tsit5(),abstol=tol/10,reltol=tol/10)
+        x = sol.t;  y = sol;
+        return [g₁(s...),g₂(y[end]...)]
     end
 
     # Find the unknown quantity at x=a by rootfinding.
-    x = [];  v = [];   # the values will be overwritten
-    s = nlsolve(objective,[init],xtol=optim_opt).zero
+    x = [];  y = [];   # these values will be overwritten
+    s = nlsolve(objective,init,xtol=tol).zero
 
-    # Don't need to solve the IVP again. It was done within the
-    # objective function already.
-    u = v[1,:]            # solution
-    dudx = v[2,:]         # derivative
-    return x,u,dudx
+    # Use the stored last solution of the IVP. 
+    u,du_dx = eachcol(y) 
+    return x,u,du_dx
 end
 
 """
@@ -135,35 +119,33 @@ function bvplin(p,q,r,xspan,lval,rval,n)
 end
 
 """
-    bvp(ϕ,xspan,lval,lder,rval,rder,init)
+    bvp(φ,xspan,lval,lder,rval,rder,init)
 
-Use finite differences to solve a two-point boundary value problem.
-The ODE is u'' = `ϕ`(x,u,u') for x in `xspan`. Specify a function
-value or derivative at the left endpoint using `lval` and `lder`,
-respectively, and similarly for the right endpoint  using `rval` and
-`rder`. (Use an empty array to denote an unknown quantity.) The
-value `init` is an initial guess for whichever value is missing at
-the left endpoint.
-
+Finite differences to solve a two-point boundary value problem with
+ODE u'' = `φ`(x,u,u') for x in `xspan`, left boundary condition 
+`g₁`(u,u')=0, and right boundary condition `g₂`(u,u')=0. The value 
+`init` is an initial estimate for the values of the solution u at
+equally spaced values of x, which also sets the number of nodes.
+    
 Returns vectors for the nodes and the values of u.
 """
-function bvp(ϕ,xspan,lval,lder,rval,rder,init)
+function bvp(φ,xspan,g₁,g₂,init)
     n = length(init) - 1
     x,Dx,Dxx = diffmat2(n,xspan)
     h = x[2]-x[1]
 
     function residual(u)
-        # Compute the difference between u'' and ϕ(x,u,u') at the
-        # interior nodes and appends the error at the boundaries.
-        dudx = Dx*u                   # discrete u'
-        d2udx2 = Dxx*u                # discrete u''
-        f = d2udx2 - ϕ.(x,u,dudx)
+        # Residual of the ODE at the nodes. 
+        du_dx = Dx*u                   # discrete u'
+        d2u_dx2 = Dxx*u                # discrete u''
+        f = d2u_dx2 - φ.(x,u,du_dx)
 
         # Replace first and last values by boundary conditions.
-        f[1] = isempty(lder) ? (u[1] - lval)/h^2 : (dudx[1] - lder)/h
-        f[n+1] = isempty(rder) ? (u[n+1] - rval)/h^2 : (dudx[n+1] - rder)/h
+        f[1] = g₁(u[1],du_dx[1])/h
+        f[n+1] = g₂(u[n+1],du_dx[n+1])/h
         return f
     end
+    
     u = levenberg(residual,init)
     return x,u[:,end]
 end

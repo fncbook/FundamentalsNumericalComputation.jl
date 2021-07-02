@@ -180,11 +180,11 @@ end
 	λ = 0.6
 	phi = (r,w,dwdr) -> λ/w^2 - dwdr/r;
 	a = eps();  b = 1;
-	lval = [];  lder = 0;   # w(a)=?, w'(a)=0
-	rval = 1;   rder = [];  # w(b)=1, w'(b)=?
+	g₁ = (u,du)->du    # Neumann at left
+	g₂ = (u,du)->u-1   # Dirichlet at right
 
-	r,w,dwdx = FNC.shoot(phi,(a,b),lval,lder,rval,rder,0.8)
-	@test w[1] ≈ 0.78775 rtol=1e-4
+	r,w,dwdx = FNC.shoot(phi,(a,b),g₁,g₂,[0.8,0])
+	@test w[1] ≈ 0.78776 rtol=1e-4
 
 	f = x -> exp(x^2-3x)
 	df = x -> (2x-3)*f(x)
@@ -205,11 +205,11 @@ end
 	@test u ≈ exact.(x) rtol=1e-3
 
 	ϕ = (t,θ,ω) -> -0.05*ω - sin(θ);
-	init = collect(LinRange(2.5,-2,101));
-	lval,lder = 2.5,[]
-	rval,rder = -2,[]
+	g1(u,du) = u-2.5
+	g2(u,du) = u+2
+	init = collect(range(2.5,-2,length=101));
 
-	t,θ = FNC.bvp(ϕ,[0,5],lval,lder,rval,rder,init)
+	t,θ = FNC.bvp(ϕ,[0,5],g1,g2,init)
 	@test θ[end][7] ≈ 2.421850016880724 rtol=1e-10
 
 	c = x -> x^2;
