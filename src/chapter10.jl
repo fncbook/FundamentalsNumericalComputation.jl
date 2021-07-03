@@ -1,16 +1,16 @@
 """
-    shoot(φ,xspan,g₁,g₂,init)
+    shoot(ϕ,xspan,g₁,g₂,init)
 
 Shooting method to solve a two-point boundary value problem with
-ODE u'' = `φ`(x,u,u') for x in `xspan`, left boundary condition 
+ODE u'' = `ϕ`(x,u,u') for x in `xspan`, left boundary condition 
 `g₁`(u,u')=0, and right boundary condition `g₂`(u,u')=0. The
 value `init` is an initial estimate for vector [u,u'] at x=a.
 
 Returns vectors for the nodes, the solution u, and derivative u'.
 """
-function shoot(φ,xspan,g₁,g₂,init,tol=1e-5)
+function shoot(ϕ,xspan,g₁,g₂,init,tol=1e-5)
     # ODE posed as a first-order equation in 2 variables.
-    shootivp = (v,p,x) -> [ v[2]; φ(x,v[1],v[2]) ]
+    shootivp = (v,p,x) -> [ v[2]; ϕ(x,v[1],v[2]) ]
 
     # Evaluate the difference between computed and target values at x=b.
     function objective(s)
@@ -119,17 +119,17 @@ function bvplin(p,q,r,xspan,lval,rval,n)
 end
 
 """
-    bvp(φ,xspan,lval,lder,rval,rder,init)
+    bvp(ϕ,xspan,lval,lder,rval,rder,init)
 
 Finite differences to solve a two-point boundary value problem with
-ODE u'' = `φ`(x,u,u') for x in `xspan`, left boundary condition 
+ODE u'' = `ϕ`(x,u,u') for x in `xspan`, left boundary condition 
 `g₁`(u,u')=0, and right boundary condition `g₂`(u,u')=0. The value 
 `init` is an initial estimate for the values of the solution u at
 equally spaced values of x, which also sets the number of nodes.
     
 Returns vectors for the nodes and the values of u.
 """
-function bvp(φ,xspan,g₁,g₂,init)
+function bvp(ϕ,xspan,g₁,g₂,init)
     n = length(init) - 1
     x,Dx,Dxx = diffmat2(n,xspan)
     h = x[2]-x[1]
@@ -138,7 +138,7 @@ function bvp(φ,xspan,g₁,g₂,init)
         # Residual of the ODE at the nodes. 
         du_dx = Dx*u                   # discrete u'
         d2u_dx2 = Dxx*u                # discrete u''
-        f = d2u_dx2 - φ.(x,u,du_dx)
+        f = d2u_dx2 - ϕ.(x,u,du_dx)
 
         # Replace first and last values by boundary conditions.
         f[1] = g₁(u[1],du_dx[1])/h
