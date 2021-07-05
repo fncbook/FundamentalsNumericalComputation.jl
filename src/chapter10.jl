@@ -105,13 +105,13 @@ Returns vectors of the nodes and the solution values.
 function bvplin(p,q,r,xspan,lval,rval,n)
     x,Dₓ,Dₓₓ = diffmat2(n,xspan)
 
-    P = diagm(0=>p.(x))
-    Q = diagm(0=>q.(x))
+    P = diagm(p.(x))
+    Q = diagm(q.(x))
     L = Dₓₓ + P*Dₓ + Q     # ODE expressed at the nodes
 
     # Replace first and last rows using boundary conditions.
-    I = Diagonal(ones(n+1))
-    A = [ I[[1],:]; L[2:n,:]; I[[n+1],:] ]
+    z = zeros(1,n)
+    A = [ [1 z]; L[2:n,:]; [z 1] ]
     b = [ lval; r.(x[2:n]); rval ]
 
     # Solve the system.
@@ -148,7 +148,7 @@ function bvp(ϕ,xspan,g₁,g₂,init)
     end
     
     u = levenberg(residual,init)
-    return x,u[:,end]
+    return x,u[end]
 end
 
 """

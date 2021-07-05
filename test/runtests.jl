@@ -210,7 +210,7 @@ end
 	init = collect(range(2.5,-2,length=101));
 
 	t,θ = FNC.bvp(ϕ,[0,5],g1,g2,init)
-	@test θ[end][7] ≈ 2.421850016880724 rtol=1e-10
+	@test θ[7] ≈ 2.421850016880724 rtol=1e-10
 
 	c = x -> x^2;
 	q = x -> 4;
