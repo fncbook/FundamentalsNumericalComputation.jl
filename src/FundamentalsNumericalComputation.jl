@@ -9,7 +9,7 @@ using Reexport
 @reexport using SparseArrays
 @reexport using Polynomials
 @reexport using NLsolve
-@reexport using OrdinaryDiffEq
+@reexport using DifferentialEquations
 @reexport using Plots
 @reexport using PrettyTables
 @reexport using QuadGK 
