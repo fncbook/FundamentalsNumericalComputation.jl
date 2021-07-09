@@ -213,7 +213,7 @@ end
 	@test θ[7] ≈ 2.421850016880724 rtol=1e-10
 
 	c = x -> x^2;
-	q = x -> 4;
+	 q = x -> 4;
 	f = x -> sin(π*x);
 	x,u = FNC.fem(c,q,f,0,1,100)
 	@test u[33] ≈ 0.1641366907307196 rtol=1e-10
@@ -229,6 +229,15 @@ end
 	t,D,DD = FNC.diffper(400,(0,2))
 	@test df.(t) ≈ D*f.(t) rtol=1e-3
 	@test ddf.(t) ≈ DD*f.(t) rtol=1e-3
+
+	phi = (t,x,u,uₓ,uₓₓ) -> uₓₓ + t*u
+	g1(u,ux) = ux;
+	g2(u,ux) = u-1;
+	init(x) = x^2;
+	x,u = FNC.parabolic(phi,(0,1),40,g1,g2,(0,2),init);
+	@test u(0.5)[21] ≈ 0.845404 rtol=1e-4
+	@test u(1)[end] ≈ 1 rtol=1e-4
+	@test u(2)[1] ≈ 2.45692 rtol=1e-4
 end
 
 @testset "Chapter 13" begin 
