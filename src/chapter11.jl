@@ -56,7 +56,7 @@ function parabolic(ϕ,xspan,m,g₁,g₂,tspan,init)
     function ode!(f,v,p,t)
         u = extend(v)
         uₓ,uₓₓ = Dₓ*u,Dₓₓ*u
-        f .= ϕ(t,x[int],u[int],uₓ[int],uₓₓ[int])
+        @. f = ϕ(t,x[int],u[int],uₓ[int],uₓₓ[int])
     end
 
     ivp = ODEProblem(ode!,init.(x[int]),float.(tspan))
