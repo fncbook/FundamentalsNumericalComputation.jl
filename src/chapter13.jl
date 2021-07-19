@@ -10,27 +10,6 @@ function ndgrid(x...)
 end
 
 """
-    rectdisc(m,xspan,n,yspan)
-
-Construct matrices and helpers for spectral discretization of
-a rectangle that is the tensor product of intervals `xspan` and
-`yspan`, using `m`+1 and `n`+1 points in the two coordinates.
-"""
-function discretize2d(m,xspan,n,yspan)
-    # Initialize grid and finite differences.
-    x,Dx,Dxx = diffcheb(m,xspan)
-    y,Dy,Dyy = diffcheb(n,yspan)
-
-    unvec = u -> reshape(u,m+1,n+1)
-
-    # Logical indexing for interior points.
-    interior = fill(false,m+1,n+1)
-    interior[2:m,2:n] .= true
-
-    return (; x,Dx,Dxx, y,Dy,Dyy, interior,vec,unvec )
-end
-
-"""
     poisson(f,g,m,xspan,n,yspan)
 
 Solve Poisson's equation on a rectangle by finite differences.
