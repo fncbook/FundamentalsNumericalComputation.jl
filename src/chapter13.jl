@@ -12,35 +12,26 @@ end
 """
     rectdisc(m,xspan,n,yspan)
 
-Construct matrices and helpers for finite-difference discretization of
+Construct matrices and helpers for spectral discretization of
 a rectangle that is the tensor product of intervals `xspan` and
 `yspan`, using `m`+1 and `n`+1 points in the two coordinates.
 """
-function rectdisc(m,xspan,n,yspan)
+function discretize2d(m,xspan,n,yspan)
     # Initialize grid and finite differences.
-    x,Dx,Dxx = diffmat2(m,xspan)
-    y,Dy,Dyy = diffmat2(n,yspan)
-    X = repeat(x,outer=(1,n+1))
-    Y = repeat(y',outer=(m+1,1))
+    x,Dx,Dxx = diffcheb(m,xspan)
+    y,Dy,Dyy = diffcheb(n,yspan)
 
-    # Locate boundary points.
-    isbndy = fill(true,m+1,n+1)
-    isbndy[2:m,2:n] .= false
+    unvec = u -> reshape(u,m+1,n+1)
 
-    # Get the diff. matrices recognized as sparse. Also include reshaping functions.
-    disc = (
-        Dx=sparse(Dx), Dxx=sparse(Dxx),
-        Dy=sparse(Dy), Dyy=sparse(Dyy),
-        Ix=Diagonal(ones(m+1)), Iy=Diagonal(ones(n+1)),
-        isbndy=isbndy,
-        vec=vec,
-        unvec=u -> reshape(u,m+1,n+1)
-        )
-    return X,Y,disc
+    # Logical indexing for interior points.
+    interior = fill(false,m+1,n+1)
+    interior[2:m,2:n] .= true
+
+    return (; x,Dx,Dxx, y,Dy,Dyy, interior,vec,unvec )
 end
 
 """
-    poissonfd(f,g,m,xspan,n,yspan)
+    poisson(f,g,m,xspan,n,yspan)
 
 Solve Poisson's equation on a rectangle by finite differences.
 Function `f` is the forcing function and function `g` gives the
@@ -48,86 +39,91 @@ Dirichlet boundary condition. The rectangle is the tensor product of
 intervals `xspan` and `yspan`,  and the discretization uses `m`+1
 and `n`+1 points in the two coordinates.
 
-Returns matrices of the grid solution values and the coordinate
-functions.
+Returns vectors defining the grid and a matrix of grid solution values.
 """
-function poissonfd(f,g,m,xspan,n,yspan)
-    # Initialize the rectangle discretization.
-    X,Y,d = rectdisc(m,xspan,n,yspan)
+function poisson(f,g,m,xspan,n,yspan)
+    # Discretize the domain.
+    x,Dx,Dxx = FNC.diffcheb(m,xspan)
+    y,Dy,Dyy = FNC.diffcheb(n,yspan)
+    mtx = h -> [ h(x,y) for x in x, y in y ]
+    X,Y = mtx((x,y)->x),mtx((x,y)->y)
+    N = (m+1)*(n+1)   # total number of unknowns
 
     # Form the collocated PDE as a linear system.
-    A = kron(d.Iy,d.Dxx) + kron(d.Dyy,d.Ix)  # Laplacian matrix
-    b = d.vec(f.(X,Y))
+    A = kron(I(n+1),Dxx) + kron(Dyy,I(m+1))  # Laplacian matrix
+    b = vec( mtx(f) )
 
-    # Replace collocation equations on the boundary.
-    scale = maximum(abs.(A[n+2,:]))
-    I = kron(d.Iy,d.Ix)
-    A[d.isbndy[:],:] = scale*I[d.isbndy[:],:]                 # Dirichet assignment
-    b[d.isbndy[:]] = scale*g.( X[d.isbndy],Y[d.isbndy] )  # assigned values
+    # Identify boundary locations.
+    isboundary = trues(m+1,n+1)
+    isboundary[2:m,2:n] .= false
+    idx = vec(isboundary)
+
+    # Apply Dirichlet condition.
+    scale = maximum(abs,A[n+2,:])
+    A[idx,:] = scale * I(N)[idx,:]        # Dirichet assignment
+    b[idx] = scale * g.(X[idx],Y[idx])    # assigned values
 
     # Solve the linear sytem and reshape the output.
     u = A\b
-    U = d.unvec(u)
-    return U,X,Y
+    U = reshape(u,m+1,n+1)
+    return x,y,U
 end
 
 """
-    newtonpde(f,g,m,xspan,n,yspan)
+    elliptic(f,g,m,xspan,n,yspan)
 
-Apply Newton's method with finite differences to solve the PDE
-`f`(u,x,y,disc)=0 on the rectangle `xspan` ``\times`` `yspan`,
-subject to `g`(x,y)=0 on the boundary. Use `m`+1 points in x by
-`n`+1 points in y.
+Solve the elliptic PDE `f`(x,y,u,u_x,u_xx,u_y,u_yy)=0 on the 
+rectangle `xspan` x `yspan`, subject to `g`(x,y)=0 on the boundary. 
+Uses `m`+1 points in x by `n`+1 points in y in a Chebyshev 
+discretization.
 
-Returns matrices of the grid solution values and the coordinate
-functions.
+Returns vectors defining the grid and a matrix of grid solution values.
 """
+function elliptic(f,g,m,xspan,n,yspan)
+    # Discretize the domain.
+    x,Dx,Dxx = FNC.diffcheb(m,xspan)
+    y,Dy,Dyy = FNC.diffcheb(n,yspan)
+    mtx = h -> [ h(x,y) for x in x, y in y ]
+    unvec = u -> reshape(u,m+1,n+1)
+    N = (m+1)*(n+1)   # total number of unknowns
+    X,Y = mtx((x,y)->x),mtx((x,y)->y)
+    
+    # Identify boundary locations and evaluate the boundary condition.
+    isboundary = trues(m+1,n+1)
+    isboundary[2:m,2:n] .= false
+    idx = vec(isboundary)
+    gb = g.(X[idx],Y[idx])
 
-function newtonpde(f,g,m,xspan,n,yspan)
-    # Discretization.
-    X,Y,d = rectdisc(n,xspan,n,yspan)
-
-    # This evaluates the discretized PDE and its Jacobian, with all the
+    # Evaluate the discretized PDE and its Jacobian, with all the
     # boundary condition modifications applied.
-    function residual(U)
-        R,J = f(U,X,Y,d)
-        Ixy = Diagonal(ones(size(J,1)))   # used for row replacements
-        scale = maximum(abs.(J))
-        J[vec(d.isbndy),:] = scale*Ixy[d.isbndy[:],:]
-        XB = X[d.isbndy];  YB = Y[d.isbndy];
-        @. R[d.isbndy] = scale*(U[d.isbndy] - g(XB,YB))
-        r = d.vec(R)
-        return r,J
+    function residual(u)
+        U = unvec(u)
+        R = f(x,y,U,Dx*U,Dxx*U,U*Dy',U*Dyy')
+        @. R[idx] = u[idx] - gb
+        return vec(R)
     end
 
-    # Intialize the Newton iteration.
-    U = zeros(size(X))
-    r,J = residual(U)
-    tol = 1e-10;  itermax = 20;
-    s = Inf;  normr = norm(r);  k = 1;
+    # Solve the equation.
+    u = levenberg(residual,zeros(N))[end]
+    U = unvec(u)
 
-    λ = 1
-    while (norm(s) > tol) && (normr > tol)
-        s = -(J'*J + λ*I) \ (J'*r)  # damped step
-        Unew = U + d.unvec(s)
-        rnew,Jnew = residual(Unew)
-
-        if norm(rnew) < normr
-            # Accept and update.
-            λ = λ/6   # dampen the Newton step less
-            U,r,J = Unew,rnew,Jnew
-            normr = norm(r)
-            k = k+1
-            @info "Norm of residual = $normr"
-        else
-            # Reject.
-            λ = 4λ   # dampen the Newton step more
-        end
-
-        if k==itermax
-            @warn "Maximum number of Newton iterations reached."
-            break
-        end
+    return function (ξ,η)
+		v = [ chebinterp(x,u,ξ) for u in eachcol(U) ]
+		return chebinterp(y,v,η)
     end
-    return U,X,Y
+
+end
+
+function chebinterp(x,v,ξ)
+    n = length(x)-1
+    w = (-1.0).^(0:n)
+    w[[1,n+1]] .*= 0.5
+
+	terms = @. w / (ξ - x)
+	if any(isinf.(terms))     # exactly at a node
+		idx = findfirst(ξ.==x)
+		return v[idx]
+	else
+		return sum(v.*terms) / sum(terms)
+	end
 end

@@ -256,20 +256,17 @@ end
 	f = (x,y) -> -sin(3*x.*y-4*y)*(9*y^2+(3*x-4)^2);
 	g = (x,y) -> sin(3*x*y-4*y);
 	xspan = [0,1];  yspan = [0,2];
-	U,X,Y = FNC.poissonfd(f,g,50,xspan,80,yspan);
-	@test g.(X,Y) ≈ U rtol=1e-3
+	x,y,U = FNC.poisson(f,g,24,xspan,30,yspan);
+	X = [x for x in x,y in y];
+	Y = [y for x in x,y in y];
+	@test g.(X,Y) ≈ U rtol=1e-8
 
 	λ = 1.5
-	function pde(U,X,Y,d)
-		LU = d.Dxx*U + U*d.Dyy';     # apply Laplacian
-		F = @. LU - λ/(U+1)^2   # residual
-	
-		L = kron(d.Dyy,d.Ix) + kron(d.Iy,d.Dxx)  # Laplacian matrix
-		u = d.vec(U)
-		J = L + spdiagm( @. 2λ/(u+1)^3 ) 
-		return F,J
+	function pde(x,y,U,Dx,Dxx,Dy,Dyy)
+		LU = Dxx*U + U*Dyy';     # apply Laplacian
+		return @. LU - λ/(U+1)^2   # residual
 	end      
 	g = (x,y) -> 0     # boundary condition
-	U,X,Y = FNC.newtonpde(pde,g,100,[0,2.5],80,[0,1]);
-	@test U[20,45] ≈ -0.25732335309199816
+	u = FNC.ellipic(pde,g,30,[0,2.5],24,[0,1]);
+	@test u(1.25,0.5) ≈ -0.330077436 rtol = 1e-6
 end
