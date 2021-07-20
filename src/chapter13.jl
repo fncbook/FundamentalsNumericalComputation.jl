@@ -22,14 +22,14 @@ Returns vectors defining the grid and a matrix of grid solution values.
 """
 function poisson(f,g,m,xspan,n,yspan)
     # Discretize the domain.
-    x,Dx,Dxx = FNC.diffcheb(m,xspan)
-    y,Dy,Dyy = FNC.diffcheb(n,yspan)
+    x,Dx,Dxx = FNC.diffmat2(m,xspan)
+    y,Dy,Dyy = FNC.diffmat2(n,yspan)
     mtx = h -> [ h(x,y) for x in x, y in y ]
     X,Y = mtx((x,y)->x),mtx((x,y)->y)
     N = (m+1)*(n+1)   # total number of unknowns
 
     # Form the collocated PDE as a linear system.
-    A = kron(I(n+1),Dxx) + kron(Dyy,I(m+1))  # Laplacian matrix
+    A = kron(I(n+1),sparse(Dxx)) + kron(sparse(Dyy),I(m+1))
     b = vec( mtx(f) )
 
     # Identify boundary locations.
