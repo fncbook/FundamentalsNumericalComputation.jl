@@ -241,17 +241,6 @@ end
 end
 
 @testset "Chapter 13" begin 
-	X,Y = FNC.ndgrid(-3:3,0:4)
-	@test [X[3,2],Y[3,2]] ≈ [-1,1]
-
-	f = x -> exp(x^2-3x)
-	df = x -> (2x-3)*f(x)
-	ddf = x -> ((2x-3)^2+2)*f(x)
-	X,Y,d = FNC.rectdisc(100,(0.1,0.5),80,(-0.3,-0.2))
-	t = X[:,1]
-	@test df.(t) ≈ d.Dx*f.(t) rtol=1e-4
-	t = Y[1,:]
-	@test df.(t) ≈ d.Dy*f.(t) rtol=1e-3
 
 	f = (x,y) -> -sin(3*x.*y-4*y)*(9*y^2+(3*x-4)^2);
 	g = (x,y) -> sin(3*x*y-4*y);
@@ -262,11 +251,11 @@ end
 	@test g.(X,Y) ≈ U rtol=1e-3
 
 	λ = 1.5
-	function pde(x,y,U,Dx,Dxx,Dy,Dyy)
-		LU = Dxx*U + U*Dyy';     # apply Laplacian
-		return @. LU - λ/(U+1)^2   # residual
+	function pde(X,Y,U,Ux,Uxx,Uy,Uyy)
+		return @. Uxx + Uyy - λ/(U+1)^2   # residual
 	end      
-	g = (x,y) -> 0     # boundary condition
-	u = FNC.ellipic(pde,g,30,[0,2.5],24,[0,1]);
-	@test u(1.25,0.5) ≈ -0.330077436 rtol = 1e-6
+	g = (x,y) -> x+y     # boundary condition
+	u = FNC.elliptic(pde,g,30,[0,2.5],24,[0,1]);
+	@test u(1.25,0.5) ≈ 1.7236921361 rtol = 1e-6
+	@test u(1,0) ≈ 1 rtol = 1e-6
 end

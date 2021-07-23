@@ -1,15 +1,4 @@
 """
-    ndgrid(x,y,...)
-
-Given ``d`` vector inputs, returns ``d`` matrices representing the coordinate
-functions on the tensor product grid.
-"""
-function ndgrid(x...)
-    I = CartesianIndices( fill(undef,length.(x)) )
-    return [ [ x[d][i[d]] for i in I]  for d in 1:length(x) ]
-end
-
-"""
     poisson(f,g,m,xspan,n,yspan)
 
 Solve Poisson's equation on a rectangle by finite differences.
@@ -49,23 +38,22 @@ function poisson(f,g,m,xspan,n,yspan)
 end
 
 """
-    elliptic(f,g,m,xspan,n,yspan)
+    elliptic(ϕ,g,m,xspan,n,yspan)
 
-Solve the elliptic PDE `f`(x,y,u,u_x,u_xx,u_y,u_yy)=0 on the 
+Solve the elliptic PDE `ϕ`(x,y,u,u_x,u_xx,u_y,u_yy)=0 on the 
 rectangle `xspan` x `yspan`, subject to `g`(x,y)=0 on the boundary. 
 Uses `m`+1 points in x by `n`+1 points in y in a Chebyshev 
 discretization.
 
 Returns vectors defining the grid and a matrix of grid solution values.
 """
-function elliptic(f,g,m,xspan,n,yspan)
+function elliptic(ϕ,g,m,xspan,n,yspan)
     # Discretize the domain.
-    x,Dx,Dxx = FNC.diffcheb(m,xspan)
-    y,Dy,Dyy = FNC.diffcheb(n,yspan)
-    mtx = h -> [ h(x,y) for x in x, y in y ]
+    x,Dx,Dxx = diffcheb(m,xspan)
+    y,Dy,Dyy = diffcheb(n,yspan)
+    X = [ x for x in x, y in y ]
+    Y = [ y for x in x, y in y ]
     unvec = u -> reshape(u,m+1,n+1)
-    N = (m+1)*(n+1)   # total number of unknowns
-    X,Y = mtx((x,y)->x),mtx((x,y)->y)
     
     # Identify boundary locations and evaluate the boundary condition.
     isboundary = trues(m+1,n+1)
@@ -77,13 +65,13 @@ function elliptic(f,g,m,xspan,n,yspan)
     # boundary condition modifications applied.
     function residual(u)
         U = unvec(u)
-        R = f(x,y,U,Dx*U,Dxx*U,U*Dy',U*Dyy')
+        R = ϕ(X,Y,U,Dx*U,Dxx*U,U*Dy',U*Dyy')
         @. R[idx] = u[idx] - gb
         return vec(R)
     end
 
     # Solve the equation.
-    u = levenberg(residual,zeros(N))[end]
+    u = levenberg(residual,vec(zeros(size(X))))[end]
     U = unvec(u)
 
     return function (ξ,η)
@@ -93,6 +81,7 @@ function elliptic(f,g,m,xspan,n,yspan)
 
 end
 
+"Evaluate Chebyshev interpolant with nodes x, values v, at point ξ"
 function chebinterp(x,v,ξ)
     n = length(x)-1
     w = (-1.0).^(0:n)
