@@ -1,5 +1,5 @@
 """
-    poisson(f,g,m,xspan,n,yspan)
+    poissonfd(f,g,m,xspan,n,yspan)
 
 Solve Poisson's equation on a rectangle by finite differences.
 Function `f` is the forcing function and function `g` gives the
@@ -9,7 +9,7 @@ and `n`+1 points in the two coordinates.
 
 Returns vectors defining the grid and a matrix of grid solution values.
 """
-function poisson(f,g,m,xspan,n,yspan)
+function poissonfd(f,g,m,xspan,n,yspan)
     # Discretize the domain.
     x,Dx,Dxx = FNC.diffmat2(m,xspan)
     y,Dy,Dyy = FNC.diffmat2(n,yspan)

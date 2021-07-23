@@ -245,7 +245,7 @@ end
 	f = (x,y) -> -sin(3*x.*y-4*y)*(9*y^2+(3*x-4)^2);
 	g = (x,y) -> sin(3*x*y-4*y);
 	xspan = [0,1];  yspan = [0,2];
-	x,y,U = FNC.poisson(f,g,60,xspan,60,yspan);
+	x,y,U = FNC.poissonfd(f,g,60,xspan,60,yspan);
 	X = [x for x in x,y in y];
 	Y = [y for x in x,y in y];
 	@test g.(X,Y) ≈ U rtol=1e-3
