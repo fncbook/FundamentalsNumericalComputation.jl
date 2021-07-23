@@ -1,14 +1,9 @@
 module FundamentalsNumericalComputation
 
-using Base: current_logger
 export FNC
 FNC = FundamentalsNumericalComputation
 
 using Reexport
-
-using Logging
-loglevel = current_logger().min_level
-disable_logging(Logging.Info)
 
 @reexport using LinearAlgebra
 @reexport using Statistics
@@ -35,8 +30,6 @@ disable_logging(Logging.Info)
 @reexport using Printf
 @reexport using JLD2
 @reexport using Printf
-
-disable_logging(loglevel)
 
 @info "Re-exporting multiple packages"
 
