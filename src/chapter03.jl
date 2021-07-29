@@ -41,8 +41,8 @@ function qrfact(A)
         nrmw = norm(w)
         if nrmw < eps() continue; end    # skip this iteration
         v = w / nrmw;
-        # Apply the reflection to each relevant column of A and Q
-        for j in 1:n
+        # Apply the reflection to each relevant column of R and Q
+        for j in k:n
             R[k:m,j] -= v*( 2*(v'*R[k:m,j]) )
         end
         for j in 1:m
