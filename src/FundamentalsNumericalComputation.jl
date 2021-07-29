@@ -5,6 +5,8 @@ FNC = FundamentalsNumericalComputation
 
 using Reexport
 
+@info "Re-exporting multiple packages..."
+
 @reexport using LinearAlgebra
 @reexport using Statistics
 @reexport using SparseArrays
@@ -13,6 +15,7 @@ using Reexport
 @reexport using DifferentialEquations
 @reexport using Plots
 @reexport using PrettyTables
+@reexport using Dierckx
 @reexport using QuadGK 
 @reexport using MatrixDepot
 @reexport using GraphRecipes
@@ -30,8 +33,6 @@ using Reexport
 @reexport using Printf
 @reexport using JLD2
 @reexport using Printf
-
-@info "Re-exporting multiple packages"
 
 include("chapter01.jl")
 include("chapter02.jl")
