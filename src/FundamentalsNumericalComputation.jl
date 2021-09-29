@@ -15,7 +15,7 @@ using Reexport
 @reexport using DifferentialEquations
 @reexport using Plots
 @reexport using PrettyTables
-@reexport using Dierckx
+@reexport using Dierckx: Spline1D
 @reexport using QuadGK 
 @reexport using MatrixDepot
 @reexport using GraphRecipes
