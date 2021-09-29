@@ -39,10 +39,10 @@ Compute the LU factorization of square matrix `A`, returning the
 factors.
 """
 function lufact(A)
-    n = size(A,1)
+    n = size(A,1)        # detect the dimensions from the input
     L = diagm(ones(n))   # ones on main diagonal, zeros elsewhere
     U = zeros(n,n)
-    Aₖ = float(copy(A))
+    Aₖ = float(copy(A))  # make a working copy 
 
     # Reduction by outer products
     for k in 1:n-1
