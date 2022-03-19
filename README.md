@@ -31,4 +31,4 @@ After installation, importing the package with a `using` statement should only t
 
 ## License
 
-This code generating the site is under an MIT license. Please see the LICENSE file for details.
+This code stored on this site is under an MIT license. Please see the LICENSE file for details.
