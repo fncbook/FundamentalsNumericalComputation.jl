@@ -145,7 +145,7 @@ end
 """
     poisson(n)
 
-Construct the finite difference Laplacian matrix for an `n` by `n` 
+Construct the finite-difference Laplacian matrix for an `n` by `n` 
 interior lattice.
 """
 function poisson(n)

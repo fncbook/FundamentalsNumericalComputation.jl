@@ -1,7 +1,7 @@
 """
     lsnormal(A,b)
 
-Solve a linear least squares problem by the normal equations.
+Solve a linear least-squares problem by the normal equations.
 Returns the minimizer of ||b-Ax||.
 """
 function lsnormal(A,b)
@@ -16,7 +16,7 @@ end
 """
     lsqrfact(A,b)
 
-Solve a linear least squares problem by QR factorization. Returns
+Solve a linear least-squares problem by QR factorization. Returns
 the minimizer of ||b-Ax||.
 """
 function lsqrfact(A,b)
