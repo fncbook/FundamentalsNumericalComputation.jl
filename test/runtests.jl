@@ -235,9 +235,9 @@ end
 	g2(u,ux) = u-1;
 	init(x) = x^2;
 	x,u = FNC.parabolic(phi,(0,1),40,g1,g2,(0,2),init);
-	@test u(0.5)[21] ≈ 0.845404 rtol=1e-4
+	@test u(0.5)[21] ≈ 0.845404 rtol=1e-3
 	@test u(1)[end] ≈ 1 rtol=1e-4
-	@test u(2)[1] ≈ 2.45692 rtol=1e-4
+	@test u(2)[1] ≈ 2.45692 rtol=1e-3
 end
 
 @testset "Chapter 13" begin 
