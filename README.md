@@ -57,4 +57,4 @@ These codes are for instructional purposes. They are not recommended for applica
 
 ## License
 
-This code generating the site is under an MIT license. Please see the LICENSE file for details.
+This code stored on this site is under an MIT license. Please see the LICENSE file for details.
