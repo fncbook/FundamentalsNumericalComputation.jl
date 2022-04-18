@@ -10,7 +10,7 @@ These are the Julia codes from the book [*Fundamentals of Numerical Computation*
 4. At the newly colored prompt, type
 
    ```julia
-   add https://github.com/fncbook/FundamentalsNumericalComputation.jl
+   add FundamentalsNumericalComputation
    ```
 
    The process will take several minutes.

@@ -12,7 +12,7 @@ These are core functions for the text *Fundamentals of Numerical Computation* by
 4. At the `pkg` prompt, type
 
    ```julia
-   add https://github.com/fncbook/FundamentalsNumericalComputation.jl
+   add FundamentalsNumericalComputation
    ```
 
    The process will take a while. In order to flatten the learning curve, this package loads many other standard numerical and plotting packages and makes them available, so there is a lot of code to install and compile.
