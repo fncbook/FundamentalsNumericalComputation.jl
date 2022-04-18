@@ -1,7 +1,7 @@
 name = "FundamentalsNumericalComputation"
 uuid = "e48b7b93-d2a8-4750-aba7-f743ccd5256c"
 authors = ["Toby Driscoll <driscoll@udel.edu>"]
-version = "0.3.3"
+version = "0.4.0"
 
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
