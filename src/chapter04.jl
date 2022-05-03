@@ -63,7 +63,7 @@ end
     newtonsys(f,jac,x₁[;maxiter,ftol,xtol])
 
 Use Newton's method to find a root of a system of equations,
-starting from `x₁`. The functions `f` and `jac should return the
+starting from `x₁`. The functions `f` and `jac` should return the
 residual vector and the Jacobian matrix, respectively. Returns the
 history of root estimates as a vector of vectors.
 
@@ -118,9 +118,8 @@ end
     levenberg(f,x₁[;maxiter,ftol,xtol])
 
 Use Levenberg's quasi-Newton iteration to find a root of the system
-`f`, starting from `x₁`, with `tol` as the stopping tolerance in
-both step size and residual norm. Returns the history of root estimates 
-as a vector of vectors.
+`f` starting from `x₁` Returns the history of root estimates as a 
+vector of vectors.
 
 The optional keyword parameters set the maximum number of iterations
 and the stopping tolerance for values of `f` and changes in `x`.

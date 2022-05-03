@@ -97,8 +97,8 @@ function rk23(ivp,tol)
         # New RK stages.
         s₂ = ivp.f( u[i]+(h/2)*s₁,   ivp.p, t[i]+h/2   )
         s₃ = ivp.f( u[i]+(3h/4)*s₂, ivp.p, t[i]+3h/4 )
-        unew2 = u[i] + h*(2s₁  + 3s₂ + 4s₃)/9   # 2rd order solution
-        s₄ = ivp.f( unew2, ivp.p, t[i]+h )
+        unew3 = u[i] + h*(2s₁  + 3s₂ + 4s₃)/9   # 3rd order solution
+        s₄ = ivp.f( unew3, ivp.p, t[i]+h )
         err = h*(-5s₁/72 + s₂/12 + s₃/9 - s₄/8)  # 2nd/3rd difference
         E = norm(err,Inf)                         # error estimate
         maxerr = tol*(1 + norm(u[i],Inf))     # relative/absolute blend
@@ -106,7 +106,7 @@ function rk23(ivp,tol)
         # Accept the proposed step?
         if E < maxerr     # yes
             push!(t,t[i]+h)
-            push!(u,unew2)
+            push!(u,unew3)
             i += 1
             s₁ = s₄       # use FSAL property
         end
