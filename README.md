@@ -1,5 +1,7 @@
 # Fundamentals of Numerical Computation
 
+[![][docs-stable-img]][docs-stable-url]
+
 These are core functions for the text *Fundamentals of Numerical Computation* by T. A. Driscoll and R. J. Braun ([preview site](http://tobydriscoll.net/unlinked/fnc-preview/)). They are a companion to the Julia (2nd) edition, to be published in 2022.
 
 **For Julia versions of the functions accompanying the MATLAB (first) edition, go to https://github.com/fncbook/fnc instead.**
@@ -29,7 +31,7 @@ These are core functions for the text *Fundamentals of Numerical Computation* by
 
 None of the functions are exported, so they must all be prefixed with the package name. However, the constant `FNC` is set as an alias to the package name to make typing more reasonable. 
 
-There is a bare-bones [documentation site](https://fncbook.github.io/FundamentalsNumericalComputation.jl/functions/), but it only gives summaries of the documentation strings. The textbook is meant to be the real guide.
+There is a bare-bones [documentation site][docs-stable-url], but it only gives summaries of the documentation strings. The textbook is meant to be the real guide.
 
 ### Startup speed
 
@@ -54,7 +56,9 @@ These codes are for instructional purposes. They are not recommended for applica
 | Method of lines  |  [MethodOfLines](https://methodoflines.sciml.ai/dev/) (still under development)
 
 
-
 ## License
 
 This code stored on this site is under an MIT license. Please see the LICENSE file for details.
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://fncbook.github.io/FundamentalsNumericalComputation.jl/stable
