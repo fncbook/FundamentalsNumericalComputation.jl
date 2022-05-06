@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: >-
+  Please cite this software using the metadata from 'preferred-citation'.
+authors:
+  - family-names: Driscoll
+    given-names: Tobin A.
+    orcid: https://orcid.org/0000-0002-1490-2545
+  - family-names: Braun
+    given-names: Richard J.
+title: "FundamentalsNumericalComputation.jl"
+version: 0.4
+date-released: 2022-05-06
+preferred-citation:
+  authors:
+    - family-names: Driscoll
+      given-names: Tobin A.
+      orcid: https://orcid.org/0000-0002-1490-2545
+    - family-names: Braun
+      given-names: Richard J.
+  title: "Fundamentals of Numerical Computation"
+  type: book
+  publisher: SIAM
+  address: Philadelphia, PA
+  date: 2022
+title: "My Research Software"
