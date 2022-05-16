@@ -46,4 +46,36 @@ include("chapter10.jl")
 include("chapter11.jl")
 include("chapter13.jl")
 
+"""
+This function sets up graphics and other settings used to process the files to 
+construct the textbook.
+"""
+function init_format(;backend=:GR)
+    if backend==:GR
+        gr()
+        default(
+            titlefont=(11,"Helvetica"),
+            guidefont=(11,"Helvetica"),
+            linewidth = 2,
+            markersize = 3,
+            msa = 0,
+            size=(500,320),
+            label="",
+            html_output_format = "svg"
+        )
+    elseif backend==:pyplot 
+        pyplot()
+        rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+        rcParams["font.sans-serif"] = append!(["Helvetica"],rcParams["font.sans-serif"])
+        rcParams["lines.linewidth"] = 2
+        rcParams["lines.markersize"] = 4
+        default(
+            msa=0,
+            size=(500,320),
+            label="",
+            html_output_format = "svg"
+            )
+    end
 end
+
+end  # module
