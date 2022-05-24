@@ -1,7 +1,7 @@
 name = "FundamentalsNumericalComputation"
 uuid = "e48b7b93-d2a8-4750-aba7-f743ccd5256c"
 authors = ["Toby Driscoll <driscoll@udel.edu>"]
-version = "0.4.1"
+version = "0.4.2"
 
 [deps]
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
