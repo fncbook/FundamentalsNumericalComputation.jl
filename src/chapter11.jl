@@ -60,7 +60,7 @@ function parabolic(ϕ,xspan,m,g₁,g₂,tspan,init)
     end
 
     ivp = ODEProblem(ode!,init.(x[int]),float.(tspan))
-    u = solve(ivp)
+    u = solve(ivp,Rodas4P(autodiff=false))
 
     return x,t->extend(u(t))
 end

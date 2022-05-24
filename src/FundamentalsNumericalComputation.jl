@@ -5,34 +5,18 @@ FNC = FundamentalsNumericalComputation
 
 using Reexport
 
-@info "Re-exporting multiple packages..."
-
-@reexport using LinearAlgebra
-@reexport using Statistics
-@reexport using SparseArrays
+# Required by the package itself
 @reexport using Polynomials
-@reexport using NLsolve
-@reexport using DifferentialEquations
-@reexport using Plots
-@reexport using PrettyTables
-@reexport using Dierckx: Spline1D
-@reexport using QuadGK 
-@reexport using MatrixDepot
-@reexport using GraphRecipes
-@reexport using Images
-@reexport using TestImages
-@reexport using Arpack
-@reexport using IterativeSolvers
-@reexport using LinearMaps
-@reexport using IncompleteLU
-@reexport using Preconditioners
-@reexport using FFTW
+@reexport using OrdinaryDiffEq
+@reexport using LinearAlgebra
+@reexport using SparseArrays
+
+# Not strictly required, but among the more obscure imports in the text, and fast to load.
 @reexport using FileIO
-@reexport using SpecialFunctions
 @reexport using LaTeXStrings
-@reexport using Printf
 @reexport using JLD2
 @reexport using Printf
+@reexport using PrettyTables
 
 include("chapter01.jl")
 include("chapter02.jl")
