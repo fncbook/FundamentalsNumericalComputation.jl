@@ -28,7 +28,7 @@ end
 	@test FNC.lsqrfact(A,b) ≈ A\b
 	Q,R = qr(A)
 	QQ,RR = FNC.qrfact(A)
-	@test Q ≈ QQ
+	@test Matrix(Q) ≈ QQ
 	@test R ≈ RR[1:3,:]
 end
 
