@@ -1,7 +1,7 @@
 name = "FundamentalsNumericalComputation"
 uuid = "e48b7b93-d2a8-4750-aba7-f743ccd5256c"
 authors = ["Toby Driscoll <driscoll@udel.edu>"]
-version = "0.4.3"
+version = "0.4.4"
 
 [deps]
 Arpack = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
@@ -45,11 +45,11 @@ ImageMagick = "1.4"
 Images = "0.26"
 IncompleteLU = "0.2"
 IterativeSolvers = "0.9"
-JLD2 = "0.4"
 LaTeXStrings = "1.4"
 LinearMaps = "3.11"
 MatrixDepot = "1.0"
 NLsolve = "4.5"
+Plots = "1.40"
 Polynomials = "4.0"
 Preconditioners = "0.6"
 PrettyTables = "2.4"
