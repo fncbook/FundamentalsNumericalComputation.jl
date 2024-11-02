@@ -28,7 +28,7 @@ end
 	@test FNC.lsqrfact(A,b) ≈ A\b
 	Q,R = qr(A)
 	QQ,RR = FNC.qrfact(A)
-	@test Matrix(Q) ≈ QQ
+	@test Matrix(Q) ≈ QQ[:, 1:3]
 	@test R ≈ RR[1:3,:]
 end
 
@@ -49,7 +49,7 @@ end
 	end
 
 	function nlfun(x)
-		f = zeros(3)  
+		f = zeros(3)
 		f[1] = exp(x[2]-x[1]) - 2;
 		f[2] = x[1]*x[2] + x[3];
 		f[3] = x[2]*x[3] + x[1]^2 - x[2];
@@ -79,12 +79,12 @@ end
 	@test Q ≈ (sin(15)+sin(5))/5 rtol = 1e-5
 	T,_ = FNC.trapezoid(f,-1,3,820)
 	@test T ≈ (sin(15)+sin(5))/5 rtol = 1e-4
-	
+
 	t = [-2,-0.5,0,1,1.5,3.5,4]/10
 	w = FNC.fdweights(t.-0.12,2)
 	f = x->cos(3x)
 	@test dot(w,f.(t)) ≈ -9cos(0.36) rtol = 1e-3
-	
+
 	t = [-2,-0.5,0,1,1.5,3.5,4]/10
 	H = FNC.hatfun(t,5)
 	@test H(0.22) ≈ (0.22-t[5])/(t[6]-t[5])
@@ -93,8 +93,8 @@ end
 	@test H(t[6])==1
 	@test H(t[7])==0
 	@test H(t[1])==0
-	p = FNC.plinterp(t,f.(t)) 
-	@test p(0.22) ≈ f(t[5]) + (f(t[6])-f(t[5]))*(0.22-t[5])/(t[6]-t[5])	
+	p = FNC.plinterp(t,f.(t))
+	@test p(0.22) ≈ f(t[5]) + (f(t[6])-f(t[5]))*(0.22-t[5])/(t[6]-t[5])
 	S = FNC.spinterp(t,exp.(t))
 	x = [-.17,-0.01,0.33,.38]
 	@test S.(x) ≈ exp.(x) rtol = 1e-5
@@ -131,7 +131,7 @@ end
 	V = randn(4,4)
 	D = diagm([-2,0.4,-0.1,0.01])
 	A = V*D/V;
-	
+
 	γ,x = FNC.poweriter(A,30)
 	@test γ[end] ≈ -2 rtol=1e-10
 	@test abs( dot(x,V[:,1])/(norm(V[:,1])*norm(x)) ) ≈ 1 rtol=1e-10
@@ -200,7 +200,7 @@ end
 	exact = x -> exp(sin(x));
 	p = x -> -cos(x);
 	q = sin;
-	r = x -> 0; 
+	r = x -> 0;
 	x,u = FNC.bvplin(p,q,r,[0,pi/2],1,exp(1),300);
 	@test u ≈ exact.(x) rtol=1e-3
 
@@ -240,7 +240,7 @@ end
 	@test u(2)[1] ≈ 2.45692 rtol=1e-3
 end
 
-@testset "Chapter 13" begin 
+@testset "Chapter 13" begin
 
 	f = (x,y) -> -sin(3*x.*y-4*y)*(9*y^2+(3*x-4)^2);
 	g = (x,y) -> sin(3*x*y-4*y);
@@ -253,7 +253,7 @@ end
 	λ = 1.5
 	function pde(X,Y,U,Ux,Uxx,Uy,Uyy)
 		return @. Uxx + Uyy - λ/(U+1)^2   # residual
-	end      
+	end
 	g = (x,y) -> x+y     # boundary condition
 	u = FNC.elliptic(pde,g,30,[0,2.5],24,[0,1]);
 	@test u(1.25,0.5) ≈ 1.7236921361 rtol = 1e-6
