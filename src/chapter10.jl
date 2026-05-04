@@ -17,7 +17,7 @@ function shoot(ϕ,xspan,g₁,g₂,init,tol=1e-5)
         IVP = ODEProblem(shootivp,s,float.(xspan))
         sol = solve(IVP,Tsit5(),abstol=tol/10,reltol=tol/10)
         x = sol.t;  y = sol;
-        return [g₁(s...),g₂(y[end]...)]
+        return [g₁(s...),g₂(y.u[end]...)]
     end
 
     # Find the unknown quantity at x=a by rootfinding.
